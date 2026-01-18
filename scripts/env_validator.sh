@@ -305,12 +305,12 @@ check_git() {
         step_success "Git remote configured: $REMOTE_URL"
       else
         step_error "Git remote not configured. Please add a remote with:"
-        echo "  git remote add origin https://github.com/abrar2030/Optionix.git"
+        echo "  git remote add origin https://github.com/quantsingularity/Optionix.git"
       fi
     else
       step_error "Current directory is not a Git repository. Initialize with:"
       echo "  git init"
-      echo "  git remote add origin https://github.com/abrar2030/Optionix.git"
+      echo "  git remote add origin https://github.com/quantsingularity/Optionix.git"
     fi
   else
     step_error "Git not found. Please install Git."

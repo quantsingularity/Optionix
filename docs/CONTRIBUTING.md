@@ -33,14 +33,14 @@ We pledge to make participation in our project a harassment-free experience for 
 
     ```bash
     # Fork on GitHub, then clone your fork
-    git clone https://github.com/abrar2030/Optionix.git
+    git clone https://github.com/quantsingularity/Optionix.git
     cd Optionix
     ```
 
 2. **Add Upstream Remote**
 
     ```bash
-    git remote add upstream https://github.com/abrar2030/Optionix.git
+    git remote add upstream https://github.com/quantsingularity/Optionix.git
     ```
 
 3. **Create a Branch**

@@ -567,9 +567,9 @@ If these solutions don't work:
     docker-compose logs -f
     ```
 
-2. **Search Issues**: [GitHub Issues](https://github.com/abrar2030/Optionix/issues)
+2. **Search Issues**: [GitHub Issues](https://github.com/quantsingularity/Optionix/issues)
 
-3. **Ask Community**: [GitHub Discussions](https://github.com/abrar2030/Optionix/discussions)
+3. **Ask Community**: [GitHub Discussions](https://github.com/quantsingularity/Optionix/discussions)
 
 4. **Report Bug**: Include:
     - Error message

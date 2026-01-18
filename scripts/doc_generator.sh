@@ -894,7 +894,7 @@ generate_all_docs() {
   echo "" >> "$MAIN_INDEX"
   echo "To get started with Optionix, follow these steps:" >> "$MAIN_INDEX"
   echo "" >> "$MAIN_INDEX"
-  echo "1. Clone the repository: \`git clone https://github.com/abrar2030/Optionix.git\`" >> "$MAIN_INDEX"
+  echo "1. Clone the repository: \`git clone https://github.com/quantsingularity/Optionix.git\`" >> "$MAIN_INDEX"
   echo "2. Set up the development environment: \`./setup_optionix_env.sh\`" >> "$MAIN_INDEX"
   echo "3. Start the application: \`./run_optionix.sh\`" >> "$MAIN_INDEX"
   echo "" >> "$MAIN_INDEX"

@@ -43,7 +43,7 @@ The fastest way to get started is using the automated setup script:
 ### Step 1: Clone Repository
 
 ```bash
-git clone https://github.com/abrar2030/Optionix.git
+git clone https://github.com/quantsingularity/Optionix.git
 cd Optionix
 ```
 
@@ -177,7 +177,7 @@ Docker provides an isolated, reproducible environment:
 
 ```bash
 # Clone and navigate to project
-git clone https://github.com/abrar2030/Optionix.git
+git clone https://github.com/quantsingularity/Optionix.git
 cd Optionix
 
 # Build and start all services

@@ -129,7 +129,7 @@ A comprehensive, enterprise-grade backend for options trading platform with adva
 1. **Clone the repository**
 
     ```bash
-    git clone https://github.com/abrar2030/optionix.git
+    git clone https://github.com/quantsingularity/optionix.git
     cd optionix/code/backend
     ```
 

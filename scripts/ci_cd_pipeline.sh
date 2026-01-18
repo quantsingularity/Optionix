@@ -125,7 +125,7 @@ checkout_code() {
     git pull
   else
     step_info "Cloning repository"
-    git clone https://github.com/abrar2030/Optionix.git .
+    git clone https://github.com/quantsingularity/Optionix.git .
   fi
 
   step_info "Current branch: $(git branch --show-current)"

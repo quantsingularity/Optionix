@@ -1,7 +1,7 @@
 # Optionix
 
-![CI/CD Status](https://img.shields.io/github/actions/workflow/status/abrar2030/Optionix/cicd.yml?branch=main&label=CI/CD&logo=github)
-[![Test Coverage](https://img.shields.io/badge/coverage-81%25-brightgreen)](https://github.com/abrar2030/Optionix/actions)
+![CI/CD Status](https://img.shields.io/github/actions/workflow/status/quantsingularity/Optionix/cicd.yml?branch=main&label=CI/CD&logo=github)
+[![Test Coverage](https://img.shields.io/badge/coverage-81%25-brightgreen)](https://github.com/quantsingularity/Optionix/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## 📈 Options Trading & Analytics Platform
@@ -185,7 +185,7 @@ For a quick setup of the entire application:
 
 ```bash
 # Clone the repository
-git clone https://github.com/abrar2030/Optionix.git
+git clone https://github.com/quantsingularity/Optionix.git
 cd Optionix
 
 # Run the setup script
