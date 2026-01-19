@@ -30,16 +30,25 @@ Optionix is a comprehensive options trading and analytics platform that combines
 
 ## Overview
 
-Optionix is a next-generation options trading platform that leverages advanced algorithms, machine learning, and blockchain technology to provide traders with powerful tools for options analysis and trading. The platform includes:
+Optionix is a next-generation options trading platform that leverages advanced algorithms, machine learning, and blockchain technology to provide traders with powerful tools for options analysis and trading.
 
-| Component                   | Description                                                     |
-| :-------------------------- | :-------------------------------------------------------------- |
-| **Options Pricing Engine**  | Advanced mathematical models for accurate options pricing       |
-| **Market Data Integration** | Real-time market data for informed decision-making              |
-| **AI Trading Signals**      | Machine learning algorithms to identify trading opportunities   |
-| **Portfolio Management**    | Comprehensive tools for tracking and managing options positions |
-| **Blockchain Integration**  | Smart contracts for decentralized options trading               |
-| **Risk Analysis**           | Sophisticated risk assessment and visualization tools           |
+## Project Structure
+
+The project is organized into several main components:
+
+```
+Optionix/
+├── code/                   # Core backend logic, services, and shared utilities
+├── docs/                   # Project documentation
+├── infrastructure/         # DevOps, deployment, and infra-related code
+├── mobile-frontend/        # Mobile application
+├── web-frontend/           # Web dashboard
+├── scripts/                # Automation, setup, and utility scripts
+├── LICENSE                 # License information
+├── README.md               # Project overview and instructions
+├── eslint.config.js        # ESLint configuration
+└── package.json            # Node.js project metadata and dependencies
+```
 
 ## Features
 
