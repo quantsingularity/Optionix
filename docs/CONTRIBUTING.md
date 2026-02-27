@@ -31,22 +31,22 @@ We pledge to make participation in our project a harassment-free experience for 
 
 1. **Fork the Repository**
 
-    ```bash
-    # Fork on GitHub, then clone your fork
-    git clone https://github.com/quantsingularity/Optionix.git
-    cd Optionix
-    ```
+   ```bash
+   # Fork on GitHub, then clone your fork
+   git clone https://github.com/quantsingularity/Optionix.git
+   cd Optionix
+   ```
 
 2. **Add Upstream Remote**
 
-    ```bash
-    git remote add upstream https://github.com/quantsingularity/Optionix.git
-    ```
+   ```bash
+   git remote add upstream https://github.com/quantsingularity/Optionix.git
+   ```
 
 3. **Create a Branch**
-    ```bash
-    git checkout -b feature/your-feature-name
-    ```
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
 
 ## Development Setup
 
@@ -284,20 +284,20 @@ def test_black_scholes_call_option():
 ### Smart Contract Tests
 
 ```javascript
-const OptionsContract = artifacts.require('OptionsContract');
+const OptionsContract = artifacts.require("OptionsContract");
 
-contract('OptionsContract', (accounts) => {
-    it('should create a new option', async () => {
-        const contract = await OptionsContract.deployed();
-        const result = await contract.createOption(
-            0, // Call option
-            web3.utils.toWei('100', 'ether'),
-            Math.floor(Date.now() / 1000) + 86400,
-            { from: accounts[0] },
-        );
+contract("OptionsContract", (accounts) => {
+  it("should create a new option", async () => {
+    const contract = await OptionsContract.deployed();
+    const result = await contract.createOption(
+      0, // Call option
+      web3.utils.toWei("100", "ether"),
+      Math.floor(Date.now() / 1000) + 86400,
+      { from: accounts[0] },
+    );
 
-        assert.ok(result.logs[0].args.optionId);
-    });
+    assert.ok(result.logs[0].args.optionId);
+  });
 });
 ```
 
@@ -384,7 +384,7 @@ def complex_function(param1: int, param2: str) -> Dict[str, Any]:
  * @returns Object containing all Greeks
  */
 function calculateGreeks(spotPrice: number, strikePrice: number): Greeks {
-    // Implementation
+  // Implementation
 }
 ```
 
@@ -415,24 +415,24 @@ Include:
 ### Security Best Practices
 
 1. **Never commit secrets**
-    - Use environment variables
-    - Add secrets to `.gitignore`
-    - Use `.env.example` as template
+   - Use environment variables
+   - Add secrets to `.gitignore`
+   - Use `.env.example` as template
 
 2. **Input Validation**
-    - Validate all user input
-    - Use Pydantic schemas
-    - Sanitize output
+   - Validate all user input
+   - Use Pydantic schemas
+   - Sanitize output
 
 3. **Authentication**
-    - Use provided auth service
-    - Never bypass authentication
-    - Implement rate limiting
+   - Use provided auth service
+   - Never bypass authentication
+   - Implement rate limiting
 
 4. **Dependencies**
-    - Keep dependencies updated
-    - Run `pip-audit` regularly
-    - Check for known vulnerabilities
+   - Keep dependencies updated
+   - Run `pip-audit` regularly
+   - Check for known vulnerabilities
 
 ## Commit Message Guidelines
 

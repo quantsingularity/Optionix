@@ -1,85 +1,87 @@
-import axios from 'axios';
+import axios from "axios";
 
 // Get API URL from environment variable or use default
 const API_BASE_URL =
-    process.env.REACT_APP_API_URL ||
-    (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8000');
+  process.env.REACT_APP_API_URL ||
+  (process.env.NODE_ENV === "production" ? "/api" : "http://localhost:8000");
 
 // Create an axios instance with default config
 const api = axios.create({
-    baseURL: API_BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    timeout: 15000, // Increased timeout to 15 seconds
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  timeout: 15000, // Increased timeout to 15 seconds
 });
 
 // Request interceptor for adding auth token
 api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-            config.headers['Authorization'] = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    },
+  (config) => {
+    const token = localStorage.getItem("auth_token");
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
 );
 
 // Response interceptor for handling errors
 api.interceptors.response.use(
-    (response) => {
-        return response;
-    },
-    (error) => {
-        if (error.response) {
-            // Handle specific error status codes
-            switch (error.response.status) {
-                case 401:
-                    // Unauthorized - clear token and redirect to login
-                    localStorage.removeItem('auth_token');
-                    // Only redirect if we're not already on the login page
-                    if (window.location.pathname !== '/login') {
-                        window.location.href = '/login';
-                    }
-                    break;
-                case 403:
-                    // Forbidden
-                    console.error('Access forbidden:', error.response.data);
-                    break;
-                case 429:
-                    // Too Many Requests
-                    console.error('Rate limit exceeded. Please try again later.');
-                    break;
-                case 500:
-                    // Server error
-                    console.error('Server error occurred:', error.response.data);
-                    break;
-                case 503:
-                    // Service unavailable
-                    console.error('Service temporarily unavailable');
-                    break;
-                default:
-                    console.error('API error:', error.response.data);
-            }
-        } else if (error.request) {
-            // Request made but no response received
-            console.error('No response received from server. Please check your connection.');
-        } else {
-            // Error in setting up the request
-            console.error('Error setting up request:', error.message);
-        }
-        return Promise.reject(error);
-    },
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response) {
+      // Handle specific error status codes
+      switch (error.response.status) {
+        case 401:
+          // Unauthorized - clear token and redirect to login
+          localStorage.removeItem("auth_token");
+          // Only redirect if we're not already on the login page
+          if (window.location.pathname !== "/login") {
+            window.location.href = "/login";
+          }
+          break;
+        case 403:
+          // Forbidden
+          console.error("Access forbidden:", error.response.data);
+          break;
+        case 429:
+          // Too Many Requests
+          console.error("Rate limit exceeded. Please try again later.");
+          break;
+        case 500:
+          // Server error
+          console.error("Server error occurred:", error.response.data);
+          break;
+        case 503:
+          // Service unavailable
+          console.error("Service temporarily unavailable");
+          break;
+        default:
+          console.error("API error:", error.response.data);
+      }
+    } else if (error.request) {
+      // Request made but no response received
+      console.error(
+        "No response received from server. Please check your connection.",
+      );
+    } else {
+      // Error in setting up the request
+      console.error("Error setting up request:", error.message);
+    }
+    return Promise.reject(error);
+  },
 );
 
 // Export API instance and base URL for WebSocket connections
 export const WS_BASE_URL =
-    process.env.REACT_APP_WS_URL ||
-    (process.env.NODE_ENV === 'production'
-        ? 'wss://api.optionix.com/ws'
-        : 'ws://localhost:8000/ws');
+  process.env.REACT_APP_WS_URL ||
+  (process.env.NODE_ENV === "production"
+    ? "wss://api.optionix.com/ws"
+    : "ws://localhost:8000/ws");
 
 export default api;

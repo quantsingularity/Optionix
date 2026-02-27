@@ -294,36 +294,36 @@ Location: `code/docker-compose.yml`
 **Key Services**:
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
-    backend:
-        build: ./code
-        ports:
-            - '8000:8000'
-        environment:
-            - DATABASE_URL=postgresql://optionix:password@postgres:5432/optionix
-            - REDIS_URL=redis://redis:6379/0
-        depends_on:
-            - postgres
-            - redis
+  backend:
+    build: ./code
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://optionix:password@postgres:5432/optionix
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
 
-    postgres:
-        image: postgres:14
-        environment:
-            POSTGRES_DB: optionix
-            POSTGRES_USER: optionix
-            POSTGRES_PASSWORD: password
-        volumes:
-            - postgres_data:/var/lib/postgresql/data
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: optionix
+      POSTGRES_USER: optionix
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
-    redis:
-        image: redis:7
-        ports:
-            - '6379:6379'
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
 
 volumes:
-    postgres_data:
+  postgres_data:
 ```
 
 ## Backend Configuration
@@ -390,12 +390,12 @@ Location: `web-frontend/package.json`
 
 ```json
 {
-    "scripts": {
-        "start": "react-scripts start",
-        "build": "react-scripts build",
-        "test": "react-scripts test",
-        "eject": "react-scripts eject"
-    }
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  }
 }
 ```
 
@@ -405,11 +405,11 @@ Location: `web-frontend/src/config/api.ts`
 
 ```typescript
 export const API_CONFIG = {
-    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
-    timeout: parseInt(process.env.REACT_APP_API_TIMEOUT || '30000'),
-    headers: {
-        'Content-Type': 'application/json',
-    },
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000",
+  timeout: parseInt(process.env.REACT_APP_API_TIMEOUT || "30000"),
+  headers: {
+    "Content-Type": "application/json",
+  },
 };
 ```
 
@@ -519,27 +519,27 @@ Location: `code/blockchain/truffle-config.js`
 
 ```javascript
 module.exports = {
-    networks: {
-        development: {
-            host: '127.0.0.1',
-            port: 8545,
-            network_id: '*',
-        },
-        goerli: {
-            provider: () =>
-                new HDWalletProvider(
-                    process.env.MNEMONIC,
-                    `https://goerli.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
-                ),
-            network_id: 5,
-            gas: 5500000,
-        },
+  networks: {
+    development: {
+      host: "127.0.0.1",
+      port: 8545,
+      network_id: "*",
     },
-    compilers: {
-        solc: {
-            version: '0.8.19',
-        },
+    goerli: {
+      provider: () =>
+        new HDWalletProvider(
+          process.env.MNEMONIC,
+          `https://goerli.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
+        ),
+      network_id: 5,
+      gas: 5500000,
     },
+  },
+  compilers: {
+    solc: {
+      version: "0.8.19",
+    },
+  },
 };
 ```
 
@@ -551,14 +551,14 @@ Location: `infrastructure/prometheus/prometheus.yml`
 
 ```yaml
 global:
-    scrape_interval: 15s
-    evaluation_interval: 15s
+  scrape_interval: 15s
+  evaluation_interval: 15s
 
 scrape_configs:
-    - job_name: 'optionix-backend'
-      static_configs:
-          - targets: ['localhost:8000']
-      metrics_path: '/metrics'
+  - job_name: "optionix-backend"
+    static_configs:
+      - targets: ["localhost:8000"]
+    metrics_path: "/metrics"
 ```
 
 ### Grafana Configuration

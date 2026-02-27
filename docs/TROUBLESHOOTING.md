@@ -426,18 +426,18 @@ db.close()
 ```typescript
 // Use React.memo for expensive components
 export const ExpensiveComponent = React.memo(({ data }) => {
-    // Component logic
+  // Component logic
 });
 
 // Debounce expensive operations
-import { debounce } from 'lodash';
+import { debounce } from "lodash";
 
 const debouncedSearch = debounce((query) => {
-    searchAPI(query);
+  searchAPI(query);
 }, 300);
 
 // Lazy load components
-const HeavyComponent = React.lazy(() => import('./HeavyComponent'));
+const HeavyComponent = React.lazy(() => import("./HeavyComponent"));
 ```
 
 ## Security & Authentication
@@ -451,24 +451,24 @@ const HeavyComponent = React.lazy(() => import('./HeavyComponent'));
 ```javascript
 // Implement token refresh
 async function refreshToken() {
-    const response = await fetch('/auth/refresh', {
-        method: 'POST',
-        body: JSON.stringify({ refresh_token: storedRefreshToken }),
-    });
-    const { access_token } = await response.json();
-    localStorage.setItem('access_token', access_token);
+  const response = await fetch("/auth/refresh", {
+    method: "POST",
+    body: JSON.stringify({ refresh_token: storedRefreshToken }),
+  });
+  const { access_token } = await response.json();
+  localStorage.setItem("access_token", access_token);
 }
 
 // Intercept 401 responses
 axios.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        if (error.response.status === 401) {
-            await refreshToken();
-            return axios.request(error.config);
-        }
-        return Promise.reject(error);
-    },
+  (response) => response,
+  async (error) => {
+    if (error.response.status === 401) {
+      await refreshToken();
+      return axios.request(error.config);
+    }
+    return Promise.reject(error);
+  },
 );
 ```
 
@@ -559,23 +559,23 @@ If these solutions don't work:
 
 1. **Check Logs**:
 
-    ```bash
-    # Backend logs
-    tail -f logs/optionix.log
+   ```bash
+   # Backend logs
+   tail -f logs/optionix.log
 
-    # Docker logs
-    docker-compose logs -f
-    ```
+   # Docker logs
+   docker-compose logs -f
+   ```
 
 2. **Search Issues**: [GitHub Issues](https://github.com/quantsingularity/Optionix/issues)
 
 3. **Ask Community**: [GitHub Discussions](https://github.com/quantsingularity/Optionix/discussions)
 
 4. **Report Bug**: Include:
-    - Error message
-    - Steps to reproduce
-    - Environment (OS, Python version, etc.)
-    - Relevant logs
+   - Error message
+   - Steps to reproduce
+   - Environment (OS, Python version, etc.)
+   - Relevant logs
 
 ## Useful Commands
 

@@ -296,16 +296,16 @@ shellcheck *.sh
 ### ⚠️ Known Limitations
 
 1. **Terraform Validate**: Requires actual module implementations to match variable names
-    - **Resolution**: Modules are placeholders; adjust based on actual AWS resources needed
-    - **Impact**: Validation will pass once modules are properly implemented
+   - **Resolution**: Modules are placeholders; adjust based on actual AWS resources needed
+   - **Impact**: Validation will pass once modules are properly implemented
 
 2. **Kubernetes Dry-Run**: Some manifests require cluster context
-    - **Resolution**: Use `kubectl apply --dry-run=server` on actual cluster
-    - **Impact**: Minimal; manifests are syntactically correct
+   - **Resolution**: Use `kubectl apply --dry-run=server` on actual cluster
+   - **Impact**: Minimal; manifests are syntactically correct
 
 3. **Helm Templates**: Use string variables, not template functions
-    - **Resolution**: Deploy with Helm or replace with actual values for raw K8s
-    - **Impact**: None; both deployment methods documented
+   - **Resolution**: Deploy with Helm or replace with actual values for raw K8s
+   - **Impact**: None; both deployment methods documented
 
 ## Security Best Practices
 

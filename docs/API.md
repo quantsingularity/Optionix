@@ -57,17 +57,17 @@ curl -X POST http://localhost:8000/auth/register \
 
 ```json
 {
-    "user_id": "123e4567-e89b-12d3-a456-426614174000",
-    "email": "trader@example.com",
-    "full_name": "John Trader",
-    "role": "trader",
-    "is_active": true,
-    "is_verified": false,
-    "kyc_status": "pending",
-    "mfa_enabled": false,
-    "risk_score": 0,
-    "created_at": "2025-01-01T12:00:00Z",
-    "last_login": null
+  "user_id": "123e4567-e89b-12d3-a456-426614174000",
+  "email": "trader@example.com",
+  "full_name": "John Trader",
+  "role": "trader",
+  "is_active": true,
+  "is_verified": false,
+  "kyc_status": "pending",
+  "mfa_enabled": false,
+  "risk_score": 0,
+  "created_at": "2025-01-01T12:00:00Z",
+  "last_login": null
 }
 ```
 
@@ -101,12 +101,12 @@ curl -X POST http://localhost:8000/auth/login \
 
 ```json
 {
-    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "token_type": "bearer",
-    "expires_in": 1800,
-    "session_id": "session_abc123",
-    "timestamp": "2025-01-01T12:00:00Z"
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
+  "expires_in": 1800,
+  "session_id": "session_abc123",
+  "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
 
@@ -126,10 +126,10 @@ Get a new access token using refresh token.
 
 ```json
 {
-    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "token_type": "bearer",
-    "expires_in": 1800
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
+  "expires_in": 1800
 }
 ```
 
@@ -153,25 +153,25 @@ curl http://localhost:8000/health
 
 ```json
 {
-    "status": "healthy",
-    "version": "2.0.0",
-    "services": {
-        "database": "healthy",
-        "blockchain": "healthy",
-        "model": "healthy",
-        "redis": "healthy",
-        "compliance_engine": "healthy",
-        "security_services": "healthy",
-        "audit_logging": "healthy"
-    },
-    "security_features": {
-        "mfa_enabled": true,
-        "rbac_enabled": true,
-        "encryption_enabled": true,
-        "audit_logging": true,
-        "compliance_monitoring": true
-    },
-    "timestamp": "2025-01-01T12:00:00Z"
+  "status": "healthy",
+  "version": "2.0.0",
+  "services": {
+    "database": "healthy",
+    "blockchain": "healthy",
+    "model": "healthy",
+    "redis": "healthy",
+    "compliance_engine": "healthy",
+    "security_services": "healthy",
+    "audit_logging": "healthy"
+  },
+  "security_features": {
+    "mfa_enabled": true,
+    "rbac_enabled": true,
+    "encryption_enabled": true,
+    "audit_logging": true,
+    "compliance_monitoring": true
+  },
+  "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
 
@@ -218,17 +218,17 @@ curl -X POST http://localhost:8000/options/price \
 
 ```json
 {
-    "price": 4.76,
-    "delta": 0.5398,
-    "gamma": 0.0189,
-    "theta": -0.0247,
-    "vega": 0.1893,
-    "rho": 0.2564,
-    "intrinsic_value": 0.0,
-    "time_value": 4.76,
-    "moneyness": 1.05,
-    "calculation_method": "black_scholes",
-    "timestamp": "2025-01-01T12:00:00Z"
+  "price": 4.76,
+  "delta": 0.5398,
+  "gamma": 0.0189,
+  "theta": -0.0247,
+  "vega": 0.1893,
+  "rho": 0.2564,
+  "intrinsic_value": 0.0,
+  "time_value": 4.76,
+  "moneyness": 1.05,
+  "calculation_method": "black_scholes",
+  "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
 
@@ -255,10 +255,10 @@ Calculate implied volatility from market price.
 
 ```json
 {
-    "implied_volatility": 0.2654,
-    "iterations": 5,
-    "error": 0.0001,
-    "timestamp": "2025-01-01T12:00:00Z"
+  "implied_volatility": 0.2654,
+  "iterations": 5,
+  "error": 0.0001,
+  "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
 
@@ -287,12 +287,12 @@ Price exotic options using Monte Carlo simulation.
 
 ```json
 {
-    "price": 3.45,
-    "standard_error": 0.02,
-    "confidence_interval": [3.41, 3.49],
-    "n_simulations": 10000,
-    "computation_time_ms": 245,
-    "timestamp": "2025-01-01T12:00:00Z"
+  "price": 3.45,
+  "standard_error": 0.02,
+  "confidence_interval": [3.41, 3.49],
+  "n_simulations": 10000,
+  "computation_time_ms": 245,
+  "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
 
@@ -335,12 +335,12 @@ curl -X POST http://localhost:8000/market/volatility \
 
 ```json
 {
-    "symbol": "AAPL",
-    "volatility": 0.2834,
-    "confidence": 0.8542,
-    "model_version": "1.0.0",
-    "prediction_horizon": "24h",
-    "timestamp": "2025-01-01T12:00:00Z"
+  "symbol": "AAPL",
+  "volatility": 0.2834,
+  "confidence": 0.8542,
+  "model_version": "1.0.0",
+  "prediction_horizon": "24h",
+  "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
 
@@ -371,32 +371,32 @@ curl -X GET "http://localhost:8000/market/options-chain/AAPL?expiration_date=202
 
 ```json
 {
-    "symbol": "AAPL",
-    "underlying_price": 150.0,
-    "expiration_dates": ["2025-03-21", "2025-06-20", "2025-09-19"],
-    "options": [
-        {
-            "strike": 145.0,
-            "expiration": "2025-06-20",
-            "call": {
-                "bid": 8.5,
-                "ask": 8.7,
-                "last": 8.6,
-                "volume": 1250,
-                "open_interest": 5430,
-                "implied_volatility": 0.28
-            },
-            "put": {
-                "bid": 2.3,
-                "ask": 2.5,
-                "last": 2.4,
-                "volume": 890,
-                "open_interest": 3210,
-                "implied_volatility": 0.27
-            }
-        }
-    ],
-    "timestamp": "2025-01-01T12:00:00Z"
+  "symbol": "AAPL",
+  "underlying_price": 150.0,
+  "expiration_dates": ["2025-03-21", "2025-06-20", "2025-09-19"],
+  "options": [
+    {
+      "strike": 145.0,
+      "expiration": "2025-06-20",
+      "call": {
+        "bid": 8.5,
+        "ask": 8.7,
+        "last": 8.6,
+        "volume": 1250,
+        "open_interest": 5430,
+        "implied_volatility": 0.28
+      },
+      "put": {
+        "bid": 2.3,
+        "ask": 2.5,
+        "last": 2.4,
+        "volume": 890,
+        "open_interest": 3210,
+        "implied_volatility": 0.27
+      }
+    }
+  ],
+  "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
 
@@ -414,17 +414,17 @@ Retrieve authenticated user's profile.
 
 ```json
 {
-    "user_id": "123e4567-e89b-12d3-a456-426614174000",
-    "email": "trader@example.com",
-    "full_name": "John Trader",
-    "role": "trader",
-    "is_active": true,
-    "is_verified": true,
-    "kyc_status": "approved",
-    "mfa_enabled": true,
-    "risk_score": 45,
-    "created_at": "2024-01-01T12:00:00Z",
-    "last_login": "2025-01-01T11:30:00Z"
+  "user_id": "123e4567-e89b-12d3-a456-426614174000",
+  "email": "trader@example.com",
+  "full_name": "John Trader",
+  "role": "trader",
+  "is_active": true,
+  "is_verified": true,
+  "kyc_status": "approved",
+  "mfa_enabled": true,
+  "risk_score": 45,
+  "created_at": "2024-01-01T12:00:00Z",
+  "last_login": "2025-01-01T11:30:00Z"
 }
 ```
 
@@ -448,12 +448,12 @@ Update user profile information.
 
 ```json
 {
-    "user_id": "123e4567-e89b-12d3-a456-426614174000",
-    "email": "trader@example.com",
-    "full_name": "John A. Trader",
-    "phone_number": "+1-555-123-4567",
-    "timezone": "America/New_York",
-    "updated_at": "2025-01-01T12:00:00Z"
+  "user_id": "123e4567-e89b-12d3-a456-426614174000",
+  "email": "trader@example.com",
+  "full_name": "John A. Trader",
+  "phone_number": "+1-555-123-4567",
+  "timezone": "America/New_York",
+  "updated_at": "2025-01-01T12:00:00Z"
 }
 ```
 
@@ -469,10 +469,10 @@ Enable multi-factor authentication.
 
 ```json
 {
-    "secret": "JBSWY3DPEHPK3PXP",
-    "qr_code": "data:image/png;base64,iVBORw0KGg...",
-    "backup_codes": ["12345678", "87654321", "11223344", "44332211", "55667788"],
-    "timestamp": "2025-01-01T12:00:00Z"
+  "secret": "JBSWY3DPEHPK3PXP",
+  "qr_code": "data:image/png;base64,iVBORw0KGg...",
+  "backup_codes": ["12345678", "87654321", "11223344", "44332211", "55667788"],
+  "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
 
@@ -490,25 +490,25 @@ Retrieve user's portfolio summary.
 
 ```json
 {
-    "total_value": 125000.5,
-    "cash_balance": 25000.0,
-    "positions_value": 100000.5,
-    "total_pnl": 12000.5,
-    "total_pnl_percent": 10.62,
-    "day_pnl": 450.25,
-    "greeks": {
-        "delta": 125.45,
-        "gamma": 3.21,
-        "theta": -45.67,
-        "vega": 234.56,
-        "rho": 12.34
-    },
-    "risk_metrics": {
-        "var_95": 2500.0,
-        "sharpe_ratio": 1.85,
-        "max_drawdown": 0.08
-    },
-    "timestamp": "2025-01-01T12:00:00Z"
+  "total_value": 125000.5,
+  "cash_balance": 25000.0,
+  "positions_value": 100000.5,
+  "total_pnl": 12000.5,
+  "total_pnl_percent": 10.62,
+  "day_pnl": 450.25,
+  "greeks": {
+    "delta": 125.45,
+    "gamma": 3.21,
+    "theta": -45.67,
+    "vega": 234.56,
+    "rho": 12.34
+  },
+  "risk_metrics": {
+    "var_95": 2500.0,
+    "sharpe_ratio": 1.85,
+    "max_drawdown": 0.08
+  },
+  "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
 
@@ -524,27 +524,27 @@ Retrieve all open positions.
 
 ```json
 {
-    "positions": [
-        {
-            "position_id": "pos_abc123",
-            "symbol": "AAPL",
-            "option_type": "call",
-            "strike": 150.0,
-            "expiration": "2025-06-20",
-            "quantity": 10,
-            "entry_price": 5.5,
-            "current_price": 6.25,
-            "pnl": 750.0,
-            "pnl_percent": 13.64,
-            "greeks": {
-                "delta": 5.4,
-                "gamma": 0.19,
-                "theta": -2.5,
-                "vega": 19.2
-            }
-        }
-    ],
-    "timestamp": "2025-01-01T12:00:00Z"
+  "positions": [
+    {
+      "position_id": "pos_abc123",
+      "symbol": "AAPL",
+      "option_type": "call",
+      "strike": 150.0,
+      "expiration": "2025-06-20",
+      "quantity": 10,
+      "entry_price": 5.5,
+      "current_price": 6.25,
+      "pnl": 750.0,
+      "pnl_percent": 13.64,
+      "greeks": {
+        "delta": 5.4,
+        "gamma": 0.19,
+        "theta": -2.5,
+        "vega": 19.2
+      }
+    }
+  ],
+  "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
 
@@ -574,11 +574,11 @@ Create a decentralized option contract on blockchain.
 
 ```json
 {
-    "contract_id": "0x123abc...",
-    "transaction_hash": "0xdef456...",
-    "gas_used": 125000,
-    "block_number": 15234567,
-    "timestamp": "2025-01-01T12:00:00Z"
+  "contract_id": "0x123abc...",
+  "transaction_hash": "0xdef456...",
+  "gas_used": 125000,
+  "block_number": 15234567,
+  "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
 
@@ -601,11 +601,11 @@ Exercise an option contract.
 
 ```json
 {
-    "success": true,
-    "payout": 15.5,
-    "transaction_hash": "0x789ghi...",
-    "gas_used": 85000,
-    "timestamp": "2025-01-01T12:00:00Z"
+  "success": true,
+  "payout": 15.5,
+  "transaction_hash": "0x789ghi...",
+  "gas_used": 85000,
+  "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
 
@@ -631,11 +631,11 @@ Calculate Value at Risk for a portfolio.
 
 ```json
 {
-    "var_amount": 2500.0,
-    "confidence_level": 0.95,
-    "time_horizon_days": 1,
-    "calculation_method": "historical",
-    "timestamp": "2025-01-01T12:00:00Z"
+  "var_amount": 2500.0,
+  "confidence_level": 0.95,
+  "time_horizon_days": 1,
+  "calculation_method": "historical",
+  "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
 
@@ -658,19 +658,19 @@ Run stress test scenarios on portfolio.
 
 ```json
 {
-    "scenarios": [
-        {
-            "name": "Market Crash -20%",
-            "portfolio_impact": -12500.0,
-            "impact_percent": -10.0
-        },
-        {
-            "name": "Volatility Spike +50%",
-            "portfolio_impact": 3450.0,
-            "impact_percent": 2.76
-        }
-    ],
-    "timestamp": "2025-01-01T12:00:00Z"
+  "scenarios": [
+    {
+      "name": "Market Crash -20%",
+      "portfolio_impact": -12500.0,
+      "impact_percent": -10.0
+    },
+    {
+      "name": "Volatility Spike +50%",
+      "portfolio_impact": 3450.0,
+      "impact_percent": 2.76
+    }
+  ],
+  "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
 
@@ -682,14 +682,14 @@ All error responses follow a consistent format:
 
 ```json
 {
-    "error": "error_type",
-    "message": "Human-readable error message",
-    "status_code": 400,
-    "timestamp": "2025-01-01T12:00:00Z",
-    "request_id": "req_abc123",
-    "details": {
-        "field": "error_detail"
-    }
+  "error": "error_type",
+  "message": "Human-readable error message",
+  "status_code": 400,
+  "timestamp": "2025-01-01T12:00:00Z",
+  "request_id": "req_abc123",
+  "details": {
+    "field": "error_detail"
+  }
 }
 ```
 
@@ -709,15 +709,15 @@ All error responses follow a consistent format:
 
 ```json
 {
-    "error": "validation_error",
-    "message": "Invalid option parameters",
-    "status_code": 400,
-    "timestamp": "2025-01-01T12:00:00Z",
-    "request_id": "req_abc123",
-    "details": {
-        "spot_price": "Must be greater than 0",
-        "volatility": "Must be between 0 and 5"
-    }
+  "error": "validation_error",
+  "message": "Invalid option parameters",
+  "status_code": 400,
+  "timestamp": "2025-01-01T12:00:00Z",
+  "request_id": "req_abc123",
+  "details": {
+    "spot_price": "Must be greater than 0",
+    "volatility": "Must be between 0 and 5"
+  }
 }
 ```
 
@@ -767,9 +767,9 @@ For real-time market data:
 
 ```json
 {
-    "action": "subscribe",
-    "channel": "market_data",
-    "symbol": "AAPL"
+  "action": "subscribe",
+  "channel": "market_data",
+  "symbol": "AAPL"
 }
 ```
 
@@ -777,11 +777,11 @@ For real-time market data:
 
 ```json
 {
-    "channel": "market_data",
-    "symbol": "AAPL",
-    "price": 150.25,
-    "volume": 1250000,
-    "timestamp": "2025-01-01T12:00:00Z"
+  "channel": "market_data",
+  "symbol": "AAPL",
+  "price": 150.25,
+  "volume": 1250000,
+  "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
 

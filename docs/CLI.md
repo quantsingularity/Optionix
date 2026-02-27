@@ -670,33 +670,33 @@ ansible-playbook -i inventory/production.ini playbooks/deploy.yml --tags "backen
 
 1. **Always activate virtual environment** before running Python commands:
 
-    ```bash
-    source venv/bin/activate
-    ```
+   ```bash
+   source venv/bin/activate
+   ```
 
 2. **Run tests before committing**:
 
-    ```bash
-    ./scripts/comprehensive_test.sh
-    ```
+   ```bash
+   ./scripts/comprehensive_test.sh
+   ```
 
 3. **Check code quality**:
 
-    ```bash
-    ./scripts/lint-all.sh --fix
-    ```
+   ```bash
+   ./scripts/lint-all.sh --fix
+   ```
 
 4. **Backup database before migrations**:
 
-    ```bash
-    ./scripts/db_manager.sh backup
-    alembic upgrade head
-    ```
+   ```bash
+   ./scripts/db_manager.sh backup
+   alembic upgrade head
+   ```
 
 5. **Monitor logs during deployment**:
-    ```bash
-    docker-compose logs -f
-    ```
+   ```bash
+   docker-compose logs -f
+   ```
 
 ## Troubleshooting
 
