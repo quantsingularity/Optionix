@@ -1,3 +1,6 @@
+from typing import Any
+
+
 def test_root_endpoint(client: Any) -> Any:
     """
     Test the root endpoint returns the expected welcome message

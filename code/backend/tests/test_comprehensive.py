@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 Comprehensive test suite for Optionix backend.
 Tests all major components including authentication, trading, compliance, and security.

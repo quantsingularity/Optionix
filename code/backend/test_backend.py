@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 Comprehensive test suite for Optionix backend.
 Tests security, compliance, and financial standards features.
