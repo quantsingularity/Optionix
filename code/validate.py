@@ -10,11 +10,11 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
-from core.logging import get_logger
+import logging
 
-logger = get_logger(__name__)
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 

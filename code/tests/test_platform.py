@@ -1,5 +1,3 @@
-from typing import Any
-
 """
 Comprehensive Test Suite for Optionix Platform
 Tests all components including:
@@ -13,33 +11,44 @@ Tests all components including:
 
 import sys
 import unittest
+from typing import Any
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 import numpy as np
 import pytest
-from core.logging import get_logger
+import logging
 
-logger = get_logger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
+
 sys.path.append("/Optionix/code/backend")
 sys.path.append("/Optionix/code/quantitative")
 sys.path.append("/Optionix/code/ai_models")
+
 try:
-    from auth import AuthService
-    from black_scholes import BlackScholesModel, OptionParameters, OptionType
-    from compliance import ComplianceService
-    from data_handler import (
+    from backend.auth import AuthService
+    from quantitative.black_scholes import (
+        BlackScholesModel,
+        OptionParameters,
+        OptionType,
+    )
+    from backend.compliance import ComplianceService
+    from backend.data_handler import (
         DataClassification,
         DataHandler,
         ValidationResult,
     )
     from ai_models import AIModelService
-    from monitoring import MonitoringService
-    from monte_carlo import (
+    from backend.monitoring import MonitoringService
+    from quantitative.monte_carlo import (
         MonteCarloSimulator,
         ProcessType,
         SimulationParameters,
     )
-    from security import SecurityService
+    from backend.security import SecurityService
 except ImportError as e:
     logger.info(f"Import error: {e}")
 

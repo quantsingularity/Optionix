@@ -1,5 +1,3 @@
-from typing import Any
-
 """
 Comprehensive Test Suite for Optionix Platform
 Tests security, compliance, and financial standards implementation
@@ -12,16 +10,18 @@ import numpy as np
 import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
+from typing import Any
+
+from backend.app import app
+from backend.auth import AuthService, UserRole
+from quantitative.black_scholes import BlackScholesModel, OptionParameters, OptionType
+from ai_models.create_model import ModelService, ModelType
+from backend.monitoring import MonitoringService
+from backend.security import SecurityService
 
 sys.path.append("/Optionix/code/backend")
 sys.path.append("/Optionix/code/quantitative")
 sys.path.append("/Optionix/code/ai_models")
-from app import app
-from auth import AuthService, UserRole
-from black_scholes import BlackScholesModel, OptionParameters, OptionType
-from create_model import ModelService, ModelType
-from monitoring import MonitoringService
-from security import SecurityService
 
 client = TestClient(app)
 

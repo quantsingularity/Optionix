@@ -1,5 +1,3 @@
-from typing import Any
-
 """
 Integration tests for the Optionix platform.
 
@@ -10,6 +8,7 @@ and risk management tools.
 
 import sys
 import unittest
+from typing import Any
 
 sys.path.append("/Optionix/code")
 from backend.services.risk_management.risk_engine import RiskEngine, RiskMetricType
@@ -22,10 +21,10 @@ from backend.services.trade_execution.execution_engine import (
     OrderSide,
     OrderType,
 )
-from quantitative.calibration_engine import CalibrationEngine
-from quantitative.local_volatility import DupireLocalVolModel
-from quantitative.stochastic_volatility import HestonModel, SabrModel
-from quantitative.volatility_surface import VolatilitySurface
+from quantitative.advanced.calibration_engine import CalibrationEngine
+from quantitative.advanced.local_volatility import DupireLocalVolModel
+from quantitative.advanced.stochastic_volatility import HestonModel, SabrModel
+from quantitative.advanced.volatility_surface import VolatilitySurface
 
 
 class IntegrationTests(unittest.TestCase):
