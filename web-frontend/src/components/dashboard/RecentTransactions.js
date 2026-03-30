@@ -1,6 +1,5 @@
-import React from "react";
+import { FiArrowDown, FiArrowUp } from "react-icons/fi";
 import styled from "styled-components";
-import { FiArrowUp, FiArrowDown } from "react-icons/fi";
 
 const TransactionsContainer = styled.div`
   width: 100%;

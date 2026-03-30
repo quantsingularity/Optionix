@@ -1,24 +1,24 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  StyleSheet,
-  ScrollView,
-  View,
-  FlatList,
   Alert,
+  FlatList,
   RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
 } from "react-native";
 import {
   ActivityIndicator,
-  Card,
-  Title,
-  Paragraph,
-  List,
-  Divider,
-  Text as PaperText,
-  useTheme,
   Button,
-  TextInput,
+  Card,
+  Divider,
   IconButton,
+  List,
+  Text as PaperText,
+  Paragraph,
+  TextInput,
+  Title,
+  useTheme,
 } from "react-native-paper";
 import { watchlistService } from "../services/api";
 
@@ -43,7 +43,7 @@ const WatchlistScreen = () => {
 
     try {
       const data = await watchlistService.getWatchlist();
-      if (data && data.symbols) {
+      if (data?.symbols) {
         setWatchlist(data.symbols);
       } else {
         setWatchlist(getInitialWatchlist());
@@ -62,11 +62,11 @@ const WatchlistScreen = () => {
     setRefreshing(true);
     await fetchWatchlist();
     setRefreshing(false);
-  }, []);
+  }, [fetchWatchlist]);
 
   useEffect(() => {
     fetchWatchlist();
-  }, []);
+  }, [fetchWatchlist]);
 
   const addSymbolToWatchlist = async () => {
     if (newSymbol.trim() === "") return;

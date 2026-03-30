@@ -1,15 +1,13 @@
-import React from "react";
-import { Alert } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { Alert } from "react-native";
 import { IconButton } from "react-native-paper";
-
-import DashboardScreen from "../screens/DashboardScreen";
-import TradingScreen from "../screens/TradingScreen";
-import PortfolioScreen from "../screens/PortfolioScreen";
-import AnalyticsScreen from "../screens/AnalyticsScreen";
-import WatchlistScreen from "../screens/WatchlistScreen";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useAuth } from "../context/AuthContext";
+import AnalyticsScreen from "../screens/AnalyticsScreen";
+import DashboardScreen from "../screens/DashboardScreen";
+import PortfolioScreen from "../screens/PortfolioScreen";
+import TradingScreen from "../screens/TradingScreen";
+import WatchlistScreen from "../screens/WatchlistScreen";
 
 const Tab = createBottomTabNavigator();
 

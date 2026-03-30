@@ -1,26 +1,24 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
+  Navigate,
+  Route,
   BrowserRouter as Router,
   Routes,
-  Route,
-  Navigate,
 } from "react-router-dom";
 import styled, { ThemeProvider } from "styled-components";
-import { AppProvider } from "./utils/AppContext";
-import { AuthProvider, useAuth } from "./utils/AuthContext";
-
-// Pages
-import Dashboard from "./pages/Dashboard";
-import Trading from "./pages/Trading";
-import Portfolio from "./pages/Portfolio";
-import Analytics from "./pages/Analytics";
-import Login from "./pages/Login";
-
+import ErrorBoundary from "./components/common/ErrorBoundary";
+import Footer from "./components/common/Footer";
 // Components
 import Navbar from "./components/common/Navbar";
 import Sidebar from "./components/common/Sidebar";
-import Footer from "./components/common/Footer";
-import ErrorBoundary from "./components/common/ErrorBoundary";
+import Analytics from "./pages/Analytics";
+// Pages
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import Portfolio from "./pages/Portfolio";
+import Trading from "./pages/Trading";
+import { AppProvider } from "./utils/AppContext";
+import { AuthProvider, useAuth } from "./utils/AuthContext";
 
 // Theme
 const theme = {

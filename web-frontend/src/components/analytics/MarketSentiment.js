@@ -1,7 +1,6 @@
-import React from "react";
-import styled from "styled-components";
+import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import styled from "styled-components";
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -95,9 +94,7 @@ const MarketSentiment = () => {
         padding: 10,
         displayColors: false,
         callbacks: {
-          label: function (context) {
-            return `${context.label}: ${context.raw}%`;
-          },
+          label: (context) => `${context.label}: ${context.raw}%`,
         },
       },
     },

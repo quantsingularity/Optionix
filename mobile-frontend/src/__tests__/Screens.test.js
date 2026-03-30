@@ -1,10 +1,9 @@
-import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 import { Provider as PaperProvider } from "react-native-paper";
-import DashboardScreen from "../screens/DashboardScreen";
-import TradingScreen from "../screens/TradingScreen";
-import PortfolioScreen from "../screens/PortfolioScreen";
 import AnalyticsScreen from "../screens/AnalyticsScreen";
+import DashboardScreen from "../screens/DashboardScreen";
+import PortfolioScreen from "../screens/PortfolioScreen";
+import TradingScreen from "../screens/TradingScreen";
 import WatchlistScreen from "../screens/WatchlistScreen";
 
 jest.mock("../services/api");

@@ -1,17 +1,15 @@
-import React from "react";
-import styled from "styled-components";
 import {
-  FiBarChart2,
   FiActivity,
   FiAlertCircle,
+  FiBarChart2,
   FiTrendingUp,
 } from "react-icons/fi";
-
+import styled from "styled-components";
+import GreeksTable from "../components/analytics/GreeksTable";
+import MarketSentiment from "../components/analytics/MarketSentiment";
+import RiskMatrix from "../components/analytics/RiskMatrix";
 // Components
 import VolatilityChart from "../components/analytics/VolatilityChart";
-import GreeksTable from "../components/analytics/GreeksTable";
-import RiskMatrix from "../components/analytics/RiskMatrix";
-import MarketSentiment from "../components/analytics/MarketSentiment";
 
 const AnalyticsContainer = styled.div`
   display: grid;

@@ -1,6 +1,5 @@
-import React from "react";
+import { FiArrowDown, FiArrowUp, FiInfo } from "react-icons/fi";
 import styled from "styled-components";
-import { FiArrowUp, FiArrowDown, FiInfo } from "react-icons/fi";
 
 const MarketOverviewContainer = styled.div`
   width: 100%;

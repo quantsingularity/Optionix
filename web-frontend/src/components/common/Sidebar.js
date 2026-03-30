@@ -1,14 +1,13 @@
-import React from "react";
-import styled from "styled-components";
 import {
-  FiHome,
-  FiTrendingUp,
   FiBriefcase,
+  FiHome,
+  FiLogOut,
   FiPieChart,
   FiSettings,
-  FiLogOut,
+  FiTrendingUp,
 } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
+import styled from "styled-components";
 
 const SidebarContainer = styled.aside`
   position: fixed;

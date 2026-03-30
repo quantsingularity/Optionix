@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { FiBell, FiMenu, FiSearch, FiUser } from "react-icons/fi";
 import styled from "styled-components";
-import { FiMenu, FiBell, FiUser, FiSearch } from "react-icons/fi";
 
 const NavbarContainer = styled.header`
   position: fixed;
@@ -130,7 +130,7 @@ const UserAvatar = styled.div`
 `;
 
 const Navbar = ({ toggleSidebar }) => {
-  const [notifications, setNotifications] = useState(3);
+  const [notifications, _setNotifications] = useState(3);
 
   return (
     <NavbarContainer>

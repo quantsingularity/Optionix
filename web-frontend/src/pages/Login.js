@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { FiAlertCircle, FiLock, FiMail } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { FiMail, FiLock, FiAlertCircle } from "react-icons/fi";
 import { useAuth } from "../utils/AuthContext";
 
 const LoginContainer = styled.div`

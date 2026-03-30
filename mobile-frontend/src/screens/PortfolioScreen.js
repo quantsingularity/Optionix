@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  StyleSheet,
-  ScrollView,
-  View,
   FlatList,
   RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
 } from "react-native";
 import {
   ActivityIndicator,
   Card,
-  Title,
-  Paragraph,
-  List,
   Divider,
+  List,
   Text as PaperText,
+  Paragraph,
+  Title,
   useTheme,
 } from "react-native-paper";
 import { portfolioService } from "../services/api";
@@ -25,7 +25,7 @@ const PortfolioScreen = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  const [usingFallbackData, setUsingFallbackData] = useState(false);
+  const [_usingFallbackData, setUsingFallbackData] = useState(false);
   const theme = useTheme();
 
   const getFallbackData = () => ({
@@ -88,11 +88,11 @@ const PortfolioScreen = () => {
     setRefreshing(true);
     await fetchPortfolioData();
     setRefreshing(false);
-  }, []);
+  }, [fetchPortfolioData]);
 
   useEffect(() => {
     fetchPortfolioData();
-  }, []);
+  }, [fetchPortfolioData]);
 
   const renderPositionItem = ({ item }) => (
     <List.Item

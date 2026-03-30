@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { FiArrowDown, FiArrowUp, FiClock, FiDollarSign } from "react-icons/fi";
 import styled from "styled-components";
-import { FiDollarSign, FiArrowUp, FiArrowDown, FiClock } from "react-icons/fi";
 
 // Components for Dashboard
 import PriceChart from "../components/dashboard/PriceChart";
-import TradingForm from "../components/trading/TradingForm";
 import OptionChain from "../components/trading/OptionChain";
 import OrderBook from "../components/trading/OrderBook";
+import TradingForm from "../components/trading/TradingForm";
 
 const TradingContainer = styled.div`
   display: grid;
@@ -111,7 +111,7 @@ const MarketItem = styled.div`
 `;
 
 const Trading = () => {
-  const [selectedAsset, setSelectedAsset] = useState("BTC-USD");
+  const [selectedAsset, _setSelectedAsset] = useState("BTC-USD");
 
   return (
     <TradingContainer>

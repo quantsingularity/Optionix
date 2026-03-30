@@ -1,25 +1,25 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  StyleSheet,
-  ScrollView,
-  View,
-  FlatList,
   Alert,
+  FlatList,
   RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
 } from "react-native";
 import {
   ActivityIndicator,
-  Card,
-  Title,
-  Paragraph,
-  TextInput,
   Button,
+  Card,
   DataTable,
-  Text as PaperText,
-  useTheme,
   Divider,
-  RadioButton,
   HelperText,
+  Text as PaperText,
+  Paragraph,
+  RadioButton,
+  TextInput,
+  Title,
+  useTheme,
 } from "react-native-paper";
 import { marketService, tradingService } from "../services/api";
 
@@ -120,7 +120,7 @@ const TradingScreen = () => {
         marketService.getOrderBook(symbol).catch(() => null),
       ]);
 
-      if (chainData && chainData.options) {
+      if (chainData?.options) {
         setOptionChain(chainData.options);
         setUsingFallbackData(false);
 
@@ -174,11 +174,11 @@ const TradingScreen = () => {
     setRefreshing(true);
     await fetchData();
     setRefreshing(false);
-  }, [symbol, expiry]);
+  }, [fetchData]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handlePlaceOrder = async () => {
     // Validation
@@ -186,7 +186,7 @@ const TradingScreen = () => {
       Alert.alert("Error", "Please select an option contract.");
       return;
     }
-    if (!quantity || parseInt(quantity) <= 0) {
+    if (!quantity || parseInt(quantity, 10) <= 0) {
       Alert.alert("Error", "Please enter a valid quantity.");
       return;
     }
@@ -209,7 +209,7 @@ const TradingScreen = () => {
         expiry,
         side: orderSide.toLowerCase(),
         order_type: orderType.toLowerCase(),
-        quantity: parseInt(quantity),
+        quantity: parseInt(quantity, 10),
         ...(orderType === "Limit" && { limit_price: parseFloat(limitPrice) }),
       };
 

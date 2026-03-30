@@ -1,5 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createContext, useContext, useEffect, useState } from "react";
 import { authService } from "../services/api";
 
 const AuthContext = createContext({});
@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   // Check for existing auth token on app load
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   const checkAuth = async () => {
     try {

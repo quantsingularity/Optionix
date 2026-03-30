@@ -1,16 +1,14 @@
-import React from "react";
-import styled from "styled-components";
 import {
-  FiPieChart,
   FiAlertTriangle,
-  FiTrendingUp,
+  FiPieChart,
   FiTrendingDown,
+  FiTrendingUp,
 } from "react-icons/fi";
-
+import styled from "styled-components";
+import PerformanceChart from "../components/portfolio/PerformanceChart";
+import PortfolioAllocation from "../components/portfolio/PortfolioAllocation";
 // Components
 import PositionsList from "../components/portfolio/PositionsList";
-import PortfolioAllocation from "../components/portfolio/PortfolioAllocation";
-import PerformanceChart from "../components/portfolio/PerformanceChart";
 import RiskAssessment from "../components/portfolio/RiskAssessment";
 
 const PortfolioContainer = styled.div`

@@ -1,20 +1,20 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-  StyleSheet,
-  View,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
+  StyleSheet,
+  View,
 } from "react-native";
 import {
-  TextInput,
   Button,
-  Title,
-  Paragraph,
-  useTheme,
-  HelperText,
   Checkbox,
+  HelperText,
+  Paragraph,
+  TextInput,
+  Title,
+  useTheme,
 } from "react-native-paper";
 import { useAuth } from "../context/AuthContext";
 
@@ -32,7 +32,7 @@ const RegisterScreen = ({ navigation }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { register, error: authError } = useAuth();
-  const theme = useTheme();
+  const _theme = useTheme();
 
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });

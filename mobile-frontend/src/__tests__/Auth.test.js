@@ -1,9 +1,8 @@
-import React from "react";
-import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { AuthProvider } from "../context/AuthContext";
 import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
-import { AuthProvider } from "../context/AuthContext";
 
 // Mock the API
 jest.mock("../services/api");

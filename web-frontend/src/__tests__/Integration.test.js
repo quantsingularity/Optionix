@@ -1,5 +1,4 @@
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 import "@testing-library/jest-dom";
@@ -59,7 +58,7 @@ describe("Login Integration Tests", () => {
   test("validates required fields", async () => {
     render(<Login />, { wrapper: AllProviders });
 
-    const submitButton = screen.getByRole("button", { name: /Sign In/i });
+    const _submitButton = screen.getByRole("button", { name: /Sign In/i });
     const emailInput = screen.getByLabelText(/Email/i);
     const passwordInput = screen.getByLabelText(/Password/i);
 

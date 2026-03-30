@@ -1,6 +1,4 @@
-import React from "react";
 import styled from "styled-components";
-import { FiArrowUp, FiArrowDown } from "react-icons/fi";
 
 const OrderBookContainer = styled.div`
   width: 100%;

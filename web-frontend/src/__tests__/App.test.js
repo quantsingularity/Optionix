@@ -1,7 +1,4 @@
-import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
-import { ThemeProvider } from "styled-components";
+import { render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import App from "../App";
 
@@ -29,7 +26,7 @@ jest.mock("../utils/AppContext", () => ({
   }),
 }));
 
-const theme = {
+const _theme = {
   colors: {
     primary: "#2962ff",
     primaryDark: "#0039cb",

@@ -1,20 +1,19 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-  StyleSheet,
-  View,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
+  StyleSheet,
+  View,
 } from "react-native";
 import {
-  TextInput,
   Button,
-  Title,
-  Paragraph,
-  useTheme,
   HelperText,
-  ActivityIndicator,
+  Paragraph,
+  TextInput,
+  Title,
+  useTheme,
 } from "react-native-paper";
 import { useAuth } from "../context/AuthContext";
 
@@ -26,7 +25,7 @@ const LoginScreen = ({ navigation }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { login, error: authError } = useAuth();
-  const theme = useTheme();
+  const _theme = useTheme();
 
   const validate = () => {
     const newErrors = {};

@@ -1,17 +1,17 @@
-import React from "react";
-import styled from "styled-components";
-import { Line } from "react-chartjs-2";
 import {
-  Chart as ChartJS,
   CategoryScale,
+  Chart as ChartJS,
+  Filler,
+  Legend,
   LinearScale,
-  PointElement,
   LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
-  Filler,
 } from "chart.js";
+import React from "react";
+import { Line } from "react-chartjs-2";
+import styled from "styled-components";
 
 // Register ChartJS components
 ChartJS.register(
@@ -114,9 +114,7 @@ const PerformanceChart = () => {
         padding: 10,
         displayColors: false,
         callbacks: {
-          label: function (context) {
-            return `$${context.raw.toLocaleString()}`;
-          },
+          label: (context) => `$${context.raw.toLocaleString()}`,
         },
       },
     },
@@ -143,9 +141,7 @@ const PerformanceChart = () => {
           font: {
             size: 10,
           },
-          callback: function (value) {
-            return "$" + value.toLocaleString();
-          },
+          callback: (value) => `$${value.toLocaleString()}`,
         },
       },
     },

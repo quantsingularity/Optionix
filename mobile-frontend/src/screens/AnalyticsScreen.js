@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  StyleSheet,
-  ScrollView,
-  View,
   FlatList,
   RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
 } from "react-native";
 import {
   ActivityIndicator,
   Card,
-  Title,
-  Paragraph,
-  List,
   Divider,
+  List,
   Text as PaperText,
+  Paragraph,
+  Title,
   useTheme,
 } from "react-native-paper";
 import { analyticsService } from "../services/api";
@@ -91,11 +91,11 @@ const AnalyticsScreen = () => {
     setRefreshing(true);
     await fetchAnalyticsData();
     setRefreshing(false);
-  }, []);
+  }, [fetchAnalyticsData]);
 
   useEffect(() => {
     fetchAnalyticsData();
-  }, []);
+  }, [fetchAnalyticsData]);
 
   const renderVolatilityItem = ({ item }) => (
     <List.Item

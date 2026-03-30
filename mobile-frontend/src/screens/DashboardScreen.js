@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { StyleSheet, ScrollView, View, RefreshControl } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
-  Card,
-  Title,
-  Paragraph,
-  List,
-  Divider,
-  Text as PaperText,
-  useTheme,
   Button,
+  Card,
+  Divider,
+  List,
+  Text as PaperText,
+  Paragraph,
+  Title,
+  useTheme,
 } from "react-native-paper";
 import { marketService } from "../services/api";
 
@@ -62,7 +62,7 @@ const DashboardScreen = () => {
     setRefreshing(true);
     await fetchMarketData();
     setRefreshing(false);
-  }, []);
+  }, [fetchMarketData]);
 
   useEffect(() => {
     fetchMarketData();
@@ -75,7 +75,7 @@ const DashboardScreen = () => {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [usingFallbackData]);
+  }, [usingFallbackData, fetchMarketData]);
 
   const renderChange = (change) => {
     const changeStr =

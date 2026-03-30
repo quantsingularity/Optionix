@@ -1,5 +1,5 @@
-import React, { useState } from "react";
 import { Contract, ethers } from "ethers";
+import { useState } from "react";
 
 export default function TradingInterface() {
   const [size, setSize] = useState("");

@@ -1,5 +1,4 @@
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 // Mock the components directory structure
@@ -27,9 +26,9 @@ jest.mock("../services/blockchain", () => ({
   getWalletStatus: jest.fn(),
 }));
 
+import Dashboard from "../pages/Dashboard";
 import api from "../services/api";
 import blockchain from "../services/blockchain";
-import Dashboard from "../pages/Dashboard";
 
 describe("Dashboard Page", () => {
   beforeEach(() => {

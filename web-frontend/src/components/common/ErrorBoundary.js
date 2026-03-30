@@ -1,6 +1,6 @@
 import React from "react";
-import styled from "styled-components";
 import { FiAlertTriangle } from "react-icons/fi";
+import styled from "styled-components";
 
 const ErrorContainer = styled.div`
   display: flex;
@@ -83,7 +83,7 @@ class ErrorBoundary extends React.Component {
     };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(_error) {
     return { hasError: true };
   }
 

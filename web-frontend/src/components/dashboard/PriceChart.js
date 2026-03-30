@@ -1,17 +1,17 @@
+import {
+  CategoryScale,
+  Chart as ChartJS,
+  Filler,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+} from "chart.js";
 import React from "react";
 import { Line } from "react-chartjs-2";
 import styled from "styled-components";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from "chart.js";
 
 // Register ChartJS components
 ChartJS.register(
@@ -107,9 +107,7 @@ const PriceChart = () => {
         padding: 10,
         displayColors: false,
         callbacks: {
-          label: function (context) {
-            return `$${context.raw.toLocaleString()}`;
-          },
+          label: (context) => `$${context.raw.toLocaleString()}`,
         },
       },
     },
@@ -136,9 +134,7 @@ const PriceChart = () => {
           font: {
             size: 10,
           },
-          callback: function (value) {
-            return "$" + value.toLocaleString();
-          },
+          callback: (value) => `$${value.toLocaleString()}`,
         },
       },
     },

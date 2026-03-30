@@ -1,6 +1,5 @@
-import React from "react";
-import styled from "styled-components";
 import { FiAlertTriangle, FiCheckCircle, FiInfo } from "react-icons/fi";
+import styled from "styled-components";
 
 const RiskContainer = styled.div`
   width: 100%;

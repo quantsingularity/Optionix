@@ -1,5 +1,3 @@
-import React from "react";
-
 describe("Mobile Frontend Tests", () => {
   it("should pass basic test", () => {
     expect(true).toBe(true);

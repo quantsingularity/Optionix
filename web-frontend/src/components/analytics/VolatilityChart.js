@@ -1,17 +1,17 @@
-import React from "react";
-import styled from "styled-components";
-import { Line } from "react-chartjs-2";
 import {
-  Chart as ChartJS,
   CategoryScale,
+  Chart as ChartJS,
+  Filler,
+  Legend,
   LinearScale,
-  PointElement,
   LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
-  Filler,
 } from "chart.js";
+import React from "react";
+import { Line } from "react-chartjs-2";
+import styled from "styled-components";
 
 // Register ChartJS components
 ChartJS.register(
@@ -130,9 +130,7 @@ const VolatilityChart = () => {
         padding: 10,
         displayColors: true,
         callbacks: {
-          label: function (context) {
-            return `${context.dataset.label}: ${context.raw}%`;
-          },
+          label: (context) => `${context.dataset.label}: ${context.raw}%`,
         },
       },
     },
@@ -159,9 +157,7 @@ const VolatilityChart = () => {
           font: {
             size: 10,
           },
-          callback: function (value) {
-            return value + "%";
-          },
+          callback: (value) => `${value}%`,
         },
       },
     },

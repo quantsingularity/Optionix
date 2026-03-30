@@ -1,9 +1,9 @@
-import React, {
+import {
   createContext,
-  useContext,
-  useState,
-  useEffect,
   useCallback,
+  useContext,
+  useEffect,
+  useState,
 } from "react";
 import api from "./api";
 
@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
           // Verify token is still valid by making a test request
           const response = await api.get("/auth/me");
           setUser(response.data);
-        } catch (err) {
+        } catch (_err) {
           // Token is invalid, clear it
           localStorage.removeItem("auth_token");
           setUser(null);

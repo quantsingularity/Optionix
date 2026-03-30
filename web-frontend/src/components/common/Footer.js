@@ -1,6 +1,5 @@
-import React from "react";
+import { FiGithub, FiLinkedin, FiTwitter } from "react-icons/fi";
 import styled from "styled-components";
-import { FiGithub, FiTwitter, FiLinkedin } from "react-icons/fi";
 
 const FooterContainer = styled.footer`
   background-color: ${(props) => props.theme.colors.backgroundLight};

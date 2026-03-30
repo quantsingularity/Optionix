@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { marketService, portfolioService } from "../services/apiServices";
+import { createContext, useContext, useEffect, useState } from "react";
 
 // Create context
 const AppContext = createContext();

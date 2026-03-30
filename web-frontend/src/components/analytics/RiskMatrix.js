@@ -1,4 +1,3 @@
-import React from "react";
 import styled from "styled-components";
 
 const MatrixContainer = styled.div`
@@ -81,7 +80,7 @@ const RiskMatrix = () => {
   // Generate matrix data
   const generateMatrix = () => {
     const matrix = [];
-    const risks = ["very-low", "low", "medium", "high", "very-high"];
+    const _risks = ["very-low", "low", "medium", "high", "very-high"];
 
     for (let i = 0; i < 5; i++) {
       for (let j = 0; j < 5; j++) {

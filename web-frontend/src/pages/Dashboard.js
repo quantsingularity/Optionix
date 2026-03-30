@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from "react";
-import styled from "styled-components";
+import { useState } from "react";
 import {
-  FiTrendingUp,
-  FiDollarSign,
   FiActivity,
+  FiDollarSign,
   FiPieChart,
+  FiTrendingUp,
 } from "react-icons/fi";
-import { useAppContext } from "../utils/AppContext"; // Import useAppContext
-import api from "../utils/api"; // Import api
+import styled from "styled-components";
+import MarketOverview from "../components/dashboard/MarketOverview";
+import PortfolioSummary from "../components/dashboard/PortfolioSummary";
 
 // Components
 import PriceChart from "../components/dashboard/PriceChart";
-import PortfolioSummary from "../components/dashboard/PortfolioSummary";
 import RecentTransactions from "../components/dashboard/RecentTransactions";
-import MarketOverview from "../components/dashboard/MarketOverview";
+import { useAppContext } from "../utils/AppContext"; // Import useAppContext
+import api from "../utils/api"; // Import api
 
 // Styled components for Login/Register form (can be moved to a separate file)
 const AuthContainer = styled.div`

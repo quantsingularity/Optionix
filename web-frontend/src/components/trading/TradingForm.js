@@ -1,11 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { FiCheckCircle } from "react-icons/fi";
 import styled from "styled-components";
-import {
-  FiDollarSign,
-  FiPercent,
-  FiCalendar,
-  FiCheckCircle,
-} from "react-icons/fi";
 
 const TradingFormContainer = styled.div`
   width: 100%;
