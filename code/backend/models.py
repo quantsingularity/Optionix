@@ -5,6 +5,7 @@ Includes all models for security, compliance, and financial standards.
 
 import uuid
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import (
     Boolean,
@@ -19,7 +20,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.sql import func
-from typing import Any
 
 Base: Any = declarative_base()
 

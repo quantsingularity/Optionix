@@ -8,6 +8,7 @@ to ensure they match market prices.
 """
 
 import logging
+
 import numpy as np
 
 logging.basicConfig(

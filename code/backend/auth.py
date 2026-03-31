@@ -22,16 +22,18 @@ from datetime import datetime, timedelta
 from enum import Enum
 from io import BytesIO
 from typing import Any, Dict, List, Optional
+
 import bcrypt
-from jose import jwt
 import pyotp
 import qrcode
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import jwt
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
+
 from .config import settings
 
 logger = logging.getLogger(__name__)

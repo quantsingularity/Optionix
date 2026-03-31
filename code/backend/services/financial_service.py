@@ -7,6 +7,7 @@ import logging
 import math
 from decimal import ROUND_HALF_UP, Decimal, getcontext
 from typing import Any, Dict, Optional
+
 from ..config import settings
 
 getcontext().prec = 28

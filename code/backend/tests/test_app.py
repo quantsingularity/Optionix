@@ -1,6 +1,7 @@
-from typing import Any
 import json
 import unittest
+from typing import Any
+
 from app import app
 
 

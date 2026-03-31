@@ -7,6 +7,7 @@ Tests security, compliance, and financial standards features.
 
 from decimal import Decimal
 from unittest.mock import patch
+
 import pytest
 from app import app
 from auth import auth_service

@@ -10,6 +10,7 @@ from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, Optional
+
 from sqlalchemy import (
     Column,
     DateTime,
@@ -22,6 +23,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
+
 from .config import settings
 from .models import Trade
 

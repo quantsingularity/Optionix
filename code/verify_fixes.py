@@ -4,8 +4,8 @@ Quick verification script for Optionix backend fixes.
 Tests that all fixed files can be imported and basic functionality works.
 """
 
-import sys
 import os
+import sys
 
 # Add backend to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -45,8 +45,9 @@ def test_type_annotations():
     print("\nTesting type annotations...")
 
     try:
-        from backend.database import get_db
         from typing import get_type_hints
+
+        from backend.database import get_db
 
         # Check get_db return type
         hints = get_type_hints(get_db)

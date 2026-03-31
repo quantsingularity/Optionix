@@ -9,6 +9,7 @@ for more accurate option pricing with volatility skew and smile.
 
 import logging
 from datetime import datetime
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats

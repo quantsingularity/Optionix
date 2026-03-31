@@ -6,6 +6,7 @@ Tests all major components including authentication, trading, compliance, and se
 """
 
 from decimal import Decimal
+
 import pytest
 from app import app
 from auth import get_password_hash

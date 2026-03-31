@@ -5,6 +5,7 @@ Includes security, compliance, and financial standards settings.
 
 from decimal import Decimal
 from typing import Any, List, Optional
+
 from pydantic import validator
 from pydantic_settings import BaseSettings
 

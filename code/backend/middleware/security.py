@@ -6,7 +6,8 @@ Provides comprehensive security features including headers, rate limiting, and v
 import logging
 import time
 from datetime import datetime
-from typing import Any, Callable, Dict, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
+
 import redis
 
 if TYPE_CHECKING:
@@ -15,6 +16,7 @@ from fastapi import Request, Response, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
+
 from ..config import settings
 
 logger = logging.getLogger(__name__)

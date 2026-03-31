@@ -9,14 +9,15 @@ Tests all components including:
 - Monitoring and compliance
 """
 
+import logging
 import sys
 import unittest
-from typing import Any
 from datetime import datetime, timedelta
+from typing import Any
 from unittest.mock import Mock, patch
+
 import numpy as np
 import pytest
-import logging
 
 logging.basicConfig(
     level=logging.INFO,
@@ -29,26 +30,22 @@ sys.path.append("/Optionix/code/quantitative")
 sys.path.append("/Optionix/code/ai_models")
 
 try:
+    from ai_models import AIModelService
     from backend.auth import AuthService
+    from backend.compliance import ComplianceService
+    from backend.data_handler import DataClassification, DataHandler, ValidationResult
+    from backend.monitoring import MonitoringService
+    from backend.security import SecurityService
     from quantitative.black_scholes import (
         BlackScholesModel,
         OptionParameters,
         OptionType,
     )
-    from backend.compliance import ComplianceService
-    from backend.data_handler import (
-        DataClassification,
-        DataHandler,
-        ValidationResult,
-    )
-    from ai_models import AIModelService
-    from backend.monitoring import MonitoringService
     from quantitative.monte_carlo import (
         MonteCarloSimulator,
         ProcessType,
         SimulationParameters,
     )
-    from backend.security import SecurityService
 except ImportError as e:
     logger.info(f"Import error: {e}")
 

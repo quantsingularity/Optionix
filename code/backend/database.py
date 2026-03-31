@@ -1,8 +1,10 @@
 import logging
 from typing import Generator, Type
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.pool import QueuePool, NullPool, StaticPool, Pool
+from sqlalchemy.pool import NullPool, Pool, QueuePool, StaticPool
+
 from .config import settings
 from .models import Base
 

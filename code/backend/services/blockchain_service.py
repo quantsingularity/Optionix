@@ -9,8 +9,10 @@ import os
 import time
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
+
 from web3 import Web3
 from web3.exceptions import ContractLogicError, Web3Exception
+
 from ..config import settings
 
 logger = logging.getLogger(__name__)
