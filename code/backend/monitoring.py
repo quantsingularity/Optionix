@@ -32,11 +32,10 @@ from sqlalchemy import (
     Text,
     create_engine,
 )
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 logger = logging.getLogger(__name__)
-Base = declarative_base()
+from .models import Base
 
 
 class AlertSeverity(str, Enum):
@@ -160,11 +159,16 @@ class MonitoringService:
     def __init__(self, config: Dict[str, Any]) -> None:
         """Initialize monitoring service"""
         self.config = config
-        self.db_engine = create_engine(
-            config.get("database_url", "sqlite:///compliance.db")
-        )
-        Base.metadata.create_all(self.db_engine)
-        Session = sessionmaker(bind=self.db_engine)
+        from .database import SessionLocal
+        from .database import engine as shared_engine
+
+        db_url = config.get("database_url")
+        if db_url:
+            self.db_engine = create_engine(db_url)
+        else:
+            self.db_engine = shared_engine
+        Base.metadata.create_all(bind=self.db_engine)
+        Session = SessionLocal if not db_url else sessionmaker(bind=self.db_engine)
         self.db_session = Session()
         self.redis_client = redis.Redis(
             host=config.get("redis_host", "localhost"),

@@ -10,14 +10,14 @@ from unittest.mock import patch
 
 import pytest
 from app import app
-from auth import auth_service
+from backend.auth import auth_service
+from backend.database import Base, get_db
+from backend.models import Account, Position, User
+from backend.security import security_service
 from compliance import compliance_service
 from data_protection import data_protection_service
-from database import Base, get_db
 from fastapi.testclient import TestClient
 from financial_standards import financial_standards_service
-from models import Account, Position, User
-from security import security_service
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 

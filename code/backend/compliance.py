@@ -25,13 +25,13 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from security import ComplianceFramework, SecurityContext, security_service
 from sqlalchemy import Boolean, Column, DateTime, Index, Integer, Numeric, String, Text
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 
+from .security import ComplianceFramework, SecurityContext, security_service
+
 logger = logging.getLogger(__name__)
-Base = declarative_base()
+from .models import Base
 
 
 class RiskLevel(str, Enum):

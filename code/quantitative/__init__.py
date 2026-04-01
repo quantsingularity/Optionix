@@ -1,5 +1,23 @@
 """
-__init__.py for quantitative module.
+Quantitative finance library for Optionix platform.
 """
 
-# Import submodules to make them accessible
+from .black_scholes import (
+    BlackScholesModel,
+    OptionParameters,
+    OptionResult,
+    OptionStyle,
+    OptionType,
+)
+from .monte_carlo import MCSimulator, OptionPayoff, SimulationParameters
+
+__all__ = [
+    "BlackScholesModel",
+    "OptionParameters",
+    "OptionResult",
+    "OptionType",
+    "OptionStyle",
+    "MCSimulator",
+    "SimulationParameters",
+    "OptionPayoff",
+]

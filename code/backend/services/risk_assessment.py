@@ -7,12 +7,21 @@ class RiskCalculator:
 
     @staticmethod
     def calculate_var(returns: Any, confidence: Any = 0.95) -> Any:
-        return np.percentile(returns, 100 * (1 - confidence))
+        returns = np.asarray(returns, dtype=float)
+        if len(returns) == 0:
+            return 0.0
+        return float(np.percentile(returns, 100 * (1 - confidence)))
 
     @staticmethod
     def expected_shortfall(returns: Any, confidence: Any = 0.95) -> Any:
+        returns = np.asarray(returns, dtype=float)
+        if len(returns) == 0:
+            return 0.0
         var = RiskCalculator.calculate_var(returns, confidence)
-        return returns[returns <= var].mean()
+        tail = returns[returns <= var]
+        if len(tail) == 0:
+            return float(var)
+        return float(tail.mean())
 
     @staticmethod
     def margin_requirement(portfolio_value: Any, volatility: Any) -> Any:

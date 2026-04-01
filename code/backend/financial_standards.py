@@ -21,14 +21,13 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 
 from .config import settings
 from .models import Trade
 
 logger = logging.getLogger(__name__)
-Base = declarative_base()
+from .models import Base
 
 
 class FinancialRegulation(str, Enum):

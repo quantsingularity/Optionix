@@ -81,7 +81,6 @@ ENV PYTHONPATH=/app \
 
 # Security hardening
 RUN chmod -R 755 /app && \
-    chmod -R 644 /app/*.py && \
     chmod +x /app/entrypoint.sh
 
 # Health check
@@ -95,7 +94,7 @@ USER optionix
 EXPOSE 8000
 
 # Set entrypoint
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Default command
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+CMD ["uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

@@ -31,13 +31,11 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import jwt
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 
 from .config import settings
 
 logger = logging.getLogger(__name__)
-Base = declarative_base()
 
 
 class UserRole(str, Enum):
@@ -249,7 +247,7 @@ class AuthService:
                 token, settings.secret_key, algorithms=[settings.algorithm]
             )
             return payload
-        except jwt.PyJWTError:
+        except Exception:
             return None
 
     def create_session(self, user_id: str, user_agent: str, ip_address: str) -> str:
@@ -285,6 +283,11 @@ class AuthService:
 
 
 auth_service = AuthService()
+
+
+def verify_token(token: str):
+    """Module-level verify_token helper used by middleware."""
+    return auth_service.verify_token(token)
 
 
 class MFAService:

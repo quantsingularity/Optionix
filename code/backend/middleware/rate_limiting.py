@@ -5,7 +5,7 @@ Implements rate limiting to prevent abuse and DDoS attacks.
 
 import logging
 import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import redis
 from fastapi import Request, status
@@ -21,44 +21,46 @@ class RateLimiter:
     """Rate limiting service using Redis for distributed rate limiting"""
 
     def __init__(self) -> None:
-        """Initialize rate limiter - gracefully handle Redis unavailability"""
-        self.redis_client = None
+        self.redis_client: Optional[Any] = None
         self._initialize_redis()
 
     def _initialize_redis(self) -> None:
         """Initialize rate limiter with Redis connection"""
         try:
-            redis.from_url(
+            client = redis.from_url(
                 settings.redis_url,
                 password=settings.redis_password,
                 decode_responses=True,
                 socket_timeout=5,
                 socket_connect_timeout=5,
             )
-            self.redis_client.ping()
+            client.ping()
+            self.redis_client = client
             logger.info("Rate limiter connected to Redis")
         except Exception as e:
             logger.error(f"Failed to connect to Redis: {e}")
             self.redis_client = None
 
     def is_rate_limited(
-        self, identifier: str, limit: int = None, window: int = None
+        self, identifier: str, limit: Optional[int] = None, window: Optional[int] = None
     ) -> Dict[str, Any]:
         """
         Check if identifier is rate limited
 
         Args:
-            identifier (str): Unique identifier (IP, user ID, API key)
-            limit (int): Request limit (default from settings)
-            window (int): Time window in seconds (default from settings)
+            identifier: Unique identifier (IP, user ID, API key)
+            limit: Request limit (default from settings)
+            window: Time window in seconds (default from settings)
 
         Returns:
-            Dict[str, Any]: Rate limit status
+            Dict with rate limit status
         """
         if limit is None:
             limit = settings.rate_limit_requests_per_minute
         if window is None:
-            window = settings.rate_limit_window_minutes
+            # Convert minutes to seconds
+            window = settings.rate_limit_window_minutes * 60
+
         if not self.redis_client:
             logger.warning("Redis unavailable, rate limiting disabled")
             return {
@@ -107,30 +109,22 @@ class RateLimiter:
             }
 
     def get_client_identifier(self, request: Request) -> str:
-        """
-        Get unique identifier for rate limiting
-
-        Args:
-            request (Request): FastAPI request object
-
-        Returns:
-            str: Unique identifier
-        """
+        """Get unique identifier for rate limiting"""
         auth_header = request.headers.get("authorization")
         if auth_header and auth_header.startswith("Bearer "):
             try:
-                from auth import verify_token
+                from ..auth import verify_token
 
                 token = auth_header.split(" ")[1]
                 payload = verify_token(token)
                 if payload:
                     return f"user:{payload.get('sub')}"
-            except:
+            except Exception:
                 pass
         api_key = request.headers.get("x-api-key")
         if api_key:
             return f"api_key:{security_service.hash_api_key(api_key)[:16]}"
-        client_ip = request.client.host
+        client_ip = request.client.host if request.client else "unknown"
         forwarded_for = request.headers.get("x-forwarded-for")
         if forwarded_for:
             client_ip = forwarded_for.split(",")[0].strip()
@@ -141,19 +135,9 @@ rate_limiter = RateLimiter()
 
 
 async def rate_limit_middleware(request: Request, call_next):
-    """
-    Rate limiting middleware for FastAPI
-
-    Args:
-        request (Request): FastAPI request
-        call_next: Next middleware/endpoint
-
-    Returns:
-        Response with rate limit headers or 429 error
-    """
-    if request.url.path in ["/health", "/", "/docs", "/openapi.json"]:
-        response = await call_next(request)
-        return response
+    """Rate limiting middleware for FastAPI"""
+    if request.url.path in ["/health", "/", "/docs", "/openapi.json", "/redoc"]:
+        return await call_next(request)
     identifier = rate_limiter.get_client_identifier(request)
     rate_limit_status = rate_limiter.is_rate_limited(identifier)
     if rate_limit_status["limited"]:

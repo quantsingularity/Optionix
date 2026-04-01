@@ -166,16 +166,25 @@ class Settings(BaseSettings):
         case_sensitive = False
         protected_namespaces = ()
 
+    @validator("debug", pre=True, always=True)
+    def set_debug_from_env(cls, v: Any, values: Any) -> Any:
+        env = values.get("environment", "production")
+        if env == "development":
+            return True
+        if env == "production":
+            return False
+        return v
+
+    @validator("log_level", pre=True, always=True)
+    def set_log_level_from_env(cls, v: Any, values: Any) -> Any:
+        env = values.get("environment", "production")
+        if env == "development":
+            return "DEBUG"
+        if env == "production":
+            return "WARNING"
+        if env == "testing":
+            return "DEBUG"
+        return v
+
 
 settings = Settings()
-if settings.environment == "development":
-    settings.debug = True
-    settings.log_level = "DEBUG"
-    settings.cors_origins = ["http://localhost:3000", "http://localhost:3001"]
-elif settings.environment == "testing":
-    settings.testing = True
-    settings.database_url = "sqlite:///./test.db"
-    settings.redis_url = "redis://localhost:6379/15"
-elif settings.environment == "production":
-    settings.debug = False
-    settings.log_level = "WARNING"

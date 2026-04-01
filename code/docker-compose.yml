@@ -1,14 +1,13 @@
 version: "3.8"
 
 services:
-  # Main Application
   app:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
-        VCS_REF: ${VCS_REF:-$(git rev-parse --short HEAD)}
+        BUILD_DATE: ${BUILD_DATE:-unknown}
+        VCS_REF: ${VCS_REF:-unknown}
         VERSION: ${VERSION:-latest}
     container_name: optionix-app
     restart: unless-stopped
@@ -16,11 +15,12 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://optionix:${POSTGRES_PASSWORD}@postgres:5432/optionix
-      - REDIS_URL=redis://redis:6379/0
-      - ENVIRONMENT=production
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
       - SECRET_KEY=${SECRET_KEY}
-      - JWT_SECRET=${JWT_SECRET}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     depends_on:
       postgres:
         condition: service_healthy
@@ -39,12 +39,10 @@ services:
       start_period: 40s
     security_opt:
       - no-new-privileges:true
-    read_only: true
     tmpfs:
       - /tmp
       - /var/tmp
 
-  # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
     container_name: optionix-postgres
@@ -53,7 +51,6 @@ services:
       - POSTGRES_DB=optionix
       - POSTGRES_USER=optionix
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init:/docker-entrypoint-initdb.d
@@ -69,16 +66,11 @@ services:
       - no-new-privileges:true
     command: >
       postgres
-      -c ssl=on
-      -c ssl_cert_file=/var/lib/postgresql/server.crt
-      -c ssl_key_file=/var/lib/postgresql/server.key
       -c log_statement=all
       -c log_duration=on
       -c log_connections=on
       -c log_disconnections=on
-      -c shared_preload_libraries=pg_stat_statements
 
-  # Redis Cache
   redis:
     image: redis:7-alpine
     container_name: optionix-redis
@@ -98,7 +90,7 @@ services:
     networks:
       - optionix-network
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -106,19 +98,21 @@ services:
     security_opt:
       - no-new-privileges:true
 
-  # Celery Worker
   celery-worker:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: optionix-celery-worker
     restart: unless-stopped
-    command: celery -A app.celery worker --loglevel=info --concurrency=4
+    command: celery -A backend.app worker --loglevel=info --concurrency=4
     environment:
       - DATABASE_URL=postgresql://optionix:${POSTGRES_PASSWORD}@postgres:5432/optionix
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/1
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD}@redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD}@redis:6379/2
+      - SECRET_KEY=${SECRET_KEY}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
     depends_on:
       postgres:
         condition: service_healthy
@@ -132,19 +126,21 @@ services:
     security_opt:
       - no-new-privileges:true
 
-  # Celery Beat Scheduler
   celery-beat:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: optionix-celery-beat
     restart: unless-stopped
-    command: celery -A app.celery beat --loglevel=info --schedule=/app/celerybeat-schedule
+    command: celery -A backend.app beat --loglevel=info --schedule=/tmp/celerybeat-schedule
     environment:
       - DATABASE_URL=postgresql://optionix:${POSTGRES_PASSWORD}@postgres:5432/optionix
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/1
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD}@redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD}@redis:6379/2
+      - SECRET_KEY=${SECRET_KEY}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
     depends_on:
       postgres:
         condition: service_healthy
@@ -152,13 +148,11 @@ services:
         condition: service_healthy
     volumes:
       - app_logs:/app/logs
-      - celery_beat:/app
     networks:
       - optionix-network
     security_opt:
       - no-new-privileges:true
 
-  # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
     container_name: optionix-nginx
@@ -191,7 +185,6 @@ services:
     security_opt:
       - no-new-privileges:true
 
-  # Prometheus Monitoring
   prometheus:
     image: prom/prometheus:latest
     container_name: optionix-prometheus
@@ -213,7 +206,6 @@ services:
     security_opt:
       - no-new-privileges:true
 
-  # Grafana Dashboard
   grafana:
     image: grafana/grafana:latest
     container_name: optionix-grafana
@@ -221,7 +213,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SECURITY_DISABLE_GRAVATAR=true
       - GF_SECURITY_COOKIE_SECURE=true
@@ -237,7 +229,6 @@ services:
     security_opt:
       - no-new-privileges:true
 
-  # ELK Stack for Logging
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
     container_name: optionix-elasticsearch
@@ -291,7 +282,6 @@ services:
     security_opt:
       - no-new-privileges:true
 
-# Networks
 networks:
   optionix-network:
     driver: bridge
@@ -299,7 +289,6 @@ networks:
       config:
         - subnet: 172.20.0.0/16
 
-# Volumes
 volumes:
   postgres_data:
     driver: local
@@ -308,8 +297,6 @@ volumes:
   app_logs:
     driver: local
   app_data:
-    driver: local
-  celery_beat:
     driver: local
   nginx_logs:
     driver: local

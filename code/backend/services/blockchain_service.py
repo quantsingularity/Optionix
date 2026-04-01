@@ -90,8 +90,9 @@ class BlockchainService:
             self.futures_contract = None
             return
         contract_address = settings.futures_contract_address
-        if not self.w3.is_address(contract_address):  # type: ignore
-            logger.warning(f"Invalid contract address: {contract_address}")
+        zero_address = "0x" + "0" * 40
+        if not self.w3.is_address(contract_address) or contract_address.lower() == zero_address:  # type: ignore
+            logger.warning(f"Invalid or zero contract address: {contract_address}")
             self.futures_contract = None
             return
         try:

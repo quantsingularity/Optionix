@@ -17,7 +17,7 @@ from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 
 # Import authentication and authorization
-from .auth import UserRole, auth_service, log_auth_event
+from .auth import UserRole, auth_service, get_current_user, log_auth_event
 
 # Import configuration and database
 from .config import settings
@@ -41,7 +41,9 @@ from .models import User
 from .schemas import (
     HealthCheckResponse,
     MarketDataRequest,
+    TokenResponse,
     UserCreate,
+    UserLogin,
     UserResponse,
     VolatilityResponse,
 )
@@ -339,4 +341,123 @@ if __name__ == "__main__":
         port=8000,
         reload=settings.debug,
         log_level=settings.log_level.lower(),
+    )
+
+
+# Login endpoint
+@app.post("/auth/login", response_model=TokenResponse, tags=["Authentication"])
+async def login_user(
+    user_data: UserLogin, request: Request, db: Session = Depends(get_db)
+):
+    """User login with JWT token issuance and MFA support"""
+
+    client_ip = request.client.host if request.client else "unknown"
+    user_agent = request.headers.get("user-agent", "")
+
+    # Check lockout
+    failed = auth_service.check_failed_attempts(f"login_{client_ip}")
+    if failed["locked"]:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many failed login attempts. Please try again later.",
+        )
+
+    user = db.query(User).filter(User.email == user_data.email).first()
+    if not user or not auth_service.verify_password(
+        user_data.password, user.hashed_password
+    ):
+        auth_service.record_failed_attempt(f"login_{client_ip}")
+        log_auth_event(db, None, "login_failed", client_ip, user_agent, "failure")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is disabled",
+        )
+
+    if user.is_locked:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is locked. Please contact support.",
+        )
+
+    # MFA check
+    if user.mfa_enabled:
+        if not user_data.mfa_token:
+            raise HTTPException(
+                status_code=status.HTTP_200_OK,
+                detail="MFA token required",
+            )
+
+    auth_service.clear_failed_attempts(f"login_{client_ip}")
+
+    token_data = {"sub": str(user.user_id), "role": user.role, "email": user.email}
+    access_token = auth_service.create_access_token(token_data)
+    refresh_token = auth_service.create_refresh_token(token_data)
+
+    # Update last login
+    from datetime import datetime
+
+    user.last_login = datetime.utcnow()
+    db.commit()
+
+    log_auth_event(db, user.id, "login_success", client_ip, user_agent, "success")
+
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer",
+        expires_in=settings.access_token_expire_minutes * 60,
+    )
+
+
+# Get current user profile endpoint
+@app.get("/auth/me", response_model=UserResponse, tags=["Authentication"])
+async def get_current_user_profile(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get the currently authenticated user's profile"""
+    user = db.query(User).filter(User.user_id == current_user.get("sub")).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    return UserResponse.from_orm(user)
+
+
+# Token refresh endpoint
+@app.post("/auth/refresh", response_model=TokenResponse, tags=["Authentication"])
+async def refresh_access_token(request: Request):
+    """Refresh access token using a valid refresh token"""
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token missing",
+        )
+    refresh_token = auth_header.split(" ")[1]
+    payload = auth_service.verify_token(refresh_token)
+    if not payload or payload.get("type") != "refresh":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token",
+        )
+    token_data = {
+        "sub": payload["sub"],
+        "role": payload.get("role"),
+        "email": payload.get("email"),
+    }
+    new_access_token = auth_service.create_access_token(token_data)
+    new_refresh_token = auth_service.create_refresh_token(token_data)
+    return TokenResponse(
+        access_token=new_access_token,
+        refresh_token=new_refresh_token,
+        token_type="bearer",
+        expires_in=settings.access_token_expire_minutes * 60,
     )

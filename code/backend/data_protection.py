@@ -16,13 +16,13 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
-from sqlalchemy.orm import Session, declarative_base
+from sqlalchemy.orm import Session
 
 from .config import settings
 from .models import AuditLog, User
 
 logger = logging.getLogger(__name__)
-Base: Any = declarative_base()
+from .models import Base
 
 
 class DataClassification(str, Enum):

@@ -171,10 +171,10 @@ class ModelService:
                 if value > 1000000:
                     raise ValueError(f"{price_field} value seems unrealistic: {value}")
                 validated_data[price_field] = value
-            volume = int(market_data["volume"])
+            volume = float(market_data["volume"])
             if volume <= 0:
                 raise ValueError("Volume must be positive")
-            if volume > 1000000000000.0:
+            if volume > 1_000_000_000_000.0:
                 raise ValueError(f"Volume value seems unrealistic: {volume}")
             validated_data["volume"] = volume
             if validated_data["high"] < validated_data["low"]:

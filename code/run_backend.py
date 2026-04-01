@@ -6,8 +6,10 @@ Startup script for Optionix backend API
 import os
 import sys
 
-# Add the code directory to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Ensure project root is on the path
+project_root = os.path.dirname(os.path.abspath(__file__))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 import uvicorn
 from backend.config import settings

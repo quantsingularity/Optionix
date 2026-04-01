@@ -9,11 +9,10 @@ from decimal import Decimal
 
 import pytest
 from app import app
-from auth import get_password_hash
-from database import Base, get_db
+from backend.database import Base, get_db
+from backend.models import User
+from backend.security import security_service
 from fastapi.testclient import TestClient
-from models import User
-from security import security_service
 from services.compliance_service import compliance_service
 from services.financial_service import FinancialCalculationService
 from sqlalchemy import create_engine

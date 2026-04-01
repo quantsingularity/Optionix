@@ -1,4 +1,4 @@
-# Optionix Platform - Comprehensive Financial Trading System
+# Optionix Platform
 
 ## Overview
 
