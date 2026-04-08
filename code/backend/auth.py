@@ -424,6 +424,74 @@ class AuthService:
         if identifier in self._failed_attempts:
             del self._failed_attempts[identifier]
 
+    def create_access_token(self, data: dict, expires_delta=None) -> str:
+        """Create JWT access token"""
+        from datetime import timedelta
+
+        from jose import jwt
+
+        from .config import settings
+
+        to_encode = data.copy()
+        if expires_delta:
+            expire = datetime.utcnow() + expires_delta
+        else:
+            expire = datetime.utcnow() + timedelta(
+                minutes=settings.access_token_expire_minutes
+            )
+        to_encode.update({"exp": expire, "type": "access"})
+        return jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
+
+    def verify_token(self, token: str):
+        """Verify JWT token"""
+        try:
+            from jose import jwt
+
+            from .config import settings
+
+            payload = jwt.decode(
+                token, settings.secret_key, algorithms=[settings.algorithm]
+            )
+            return payload
+        except Exception:
+            return None
+
+    def create_refresh_token(self, data: dict, expires_delta=None) -> str:
+        """Create JWT refresh token"""
+        from datetime import timedelta
+
+        from jose import jwt
+
+        from .config import settings
+
+        to_encode = data.copy()
+        if expires_delta:
+            expire = datetime.utcnow() + expires_delta
+        else:
+            expire = datetime.utcnow() + timedelta(
+                days=settings.refresh_token_expire_days
+            )
+        to_encode.update({"exp": expire, "type": "refresh"})
+        return jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
+
+    def validate_kyc_data(self, kyc_data: dict) -> bool:
+        """Validate KYC data fields"""
+        import re
+
+        required_fields = [
+            "full_name",
+            "date_of_birth",
+            "identity_document",
+            "document_number",
+        ]
+        for field in required_fields:
+            if not kyc_data.get(field):
+                return False
+        ssn = kyc_data.get("ssn", "")
+        if ssn and not re.match(r"^\d{3}-\d{2}-\d{4}$", ssn):
+            return False
+        return True
+
 
 auth_service = AuthService()
 

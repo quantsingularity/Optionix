@@ -193,7 +193,7 @@ class DataAuditLogModel(Base):
     timestamp = Column(DateTime, nullable=False)
     data_hash = Column(String(255), nullable=False)
     classification = Column(String(50), nullable=False)
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column(JSON, nullable=True)
 
 
 class EncryptedDataModel(Base):
@@ -218,7 +218,7 @@ class DataQualityMetrics(Base):
     consistency_score = Column(Float, nullable=False)
     validity_score = Column(Float, nullable=False)
     timestamp = Column(DateTime, nullable=False)
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column(JSON, nullable=True)
 
 
 class DataHandler:
@@ -609,7 +609,7 @@ class DataHandler:
                 timestamp=audit_log.timestamp,
                 data_hash=audit_log.data_hash,
                 classification=audit_log.classification.value,
-                metadata=audit_log.metadata,
+                metadata=audit_log.extra_metadata,
             )
             self.db_session.add(audit_model)
             self.db_session.commit()

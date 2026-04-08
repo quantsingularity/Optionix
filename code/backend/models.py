@@ -82,9 +82,15 @@ class User(Base):
     audit_logs = relationship(
         "AuditLog", back_populates="user", foreign_keys="AuditLog.user_id"
     )
-    api_keys = relationship("APIKey", back_populates="user")
-    kyc_documents = relationship("KYCDocument", back_populates="user")
-    sanctions_checks = relationship("SanctionsCheck", back_populates="user")
+    api_keys = relationship(
+        "APIKey", back_populates="user", foreign_keys="APIKey.user_id"
+    )
+    kyc_documents = relationship(
+        "KYCDocument", back_populates="user", foreign_keys="KYCDocument.user_id"
+    )
+    sanctions_checks = relationship(
+        "SanctionsCheck", back_populates="user", foreign_keys="SanctionsCheck.user_id"
+    )
 
     # Indexes
     __table_args__ = (

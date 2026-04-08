@@ -105,7 +105,7 @@ class TransactionLog(Base):
     asset = Column(String(50), nullable=True)
     timestamp = Column(DateTime, nullable=False)
     status = Column(String(50), nullable=False)
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column(JSON, nullable=True)
     risk_score = Column(Float, nullable=True)
     compliance_status = Column(String(50), nullable=False)
 
@@ -121,7 +121,7 @@ class ComplianceAlertModel(Base):
     transaction_id = Column(String(255), nullable=True)
     timestamp = Column(DateTime, nullable=False)
     status = Column(String(50), nullable=False)
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column(JSON, nullable=True)
     resolved_at = Column(DateTime, nullable=True)
     resolved_by = Column(String(255), nullable=True)
 
@@ -205,7 +205,7 @@ class MonitoringService:
                 asset=transaction_data.get("asset"),
                 timestamp=datetime.utcnow(),
                 status=transaction_data.get("status", "pending"),
-                metadata=transaction_data,
+                extra_metadata=transaction_data,
                 risk_score=risk_score,
                 compliance_status="compliant" if not violations else "flagged",
             )
@@ -288,11 +288,11 @@ class MonitoringService:
         try:
             alert_id = f"ALERT_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{transaction_data.get('transaction_id', 'UNKNOWN')}"
             severity = AlertSeverity.LOW
-            if risk_score > 90:
+            if risk_score > 75:
                 severity = AlertSeverity.CRITICAL
-            elif risk_score > 70:
-                severity = AlertSeverity.HIGH
             elif risk_score > 50:
+                severity = AlertSeverity.HIGH
+            elif risk_score > 20:
                 severity = AlertSeverity.MEDIUM
             alert = ComplianceAlert(
                 alert_id=alert_id,

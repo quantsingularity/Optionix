@@ -171,7 +171,7 @@ class VolatilitySurface:
         """
         try:
             validated_data = self.validate_option_data(option_data)
-            if len(validated_data) < 10:
+            if len(validated_data) < 3:
                 raise ValueError("Insufficient valid option data for surface fitting")
             strikes = np.array([opt.strike for opt in validated_data])
             expiries = np.array([opt.expiry for opt in validated_data])

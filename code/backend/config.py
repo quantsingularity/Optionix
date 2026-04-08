@@ -6,7 +6,7 @@ Includes security, compliance, and financial standards settings.
 from decimal import Decimal
 from typing import Any, List, Optional
 
-from pydantic import validator
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -134,57 +134,42 @@ class Settings(BaseSettings):
     real_time_monitoring: bool = True
     advanced_analytics: bool = True
 
-    @validator("cors_origins", pre=True)
-    def parse_cors_origins(cls: Any, v: Any) -> Any:
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v: Any) -> Any:
         if isinstance(v, str):
             return [origin.strip() for origin in v.split(",")]
         return v
 
-    @validator("secret_key")
-    def validate_secret_key(cls: Any, v: Any) -> Any:
+    @field_validator("secret_key")
+    @classmethod
+    def validate_secret_key(cls, v: Any) -> Any:
         if len(v) < 32:
             raise ValueError("Secret key must be at least 32 characters long")
         return v
 
-    @validator("encryption_key")
-    def validate_encryption_key(cls: Any, v: Any) -> Any:
+    @field_validator("encryption_key")
+    @classmethod
+    def validate_encryption_key(cls, v: Any) -> Any:
         if len(v) != 32:
             raise ValueError("Encryption key must be exactly 32 characters long")
         return v
 
-    @validator("environment")
-    def validate_environment(cls: Any, v: Any) -> Any:
+    @field_validator("environment")
+    @classmethod
+    def validate_environment(cls, v: Any) -> Any:
         if v not in ["development", "staging", "production", "testing"]:
             raise ValueError(
                 "Environment must be one of: development, staging, production, testing"
             )
         return v
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
-        protected_namespaces = ()
-
-    @validator("debug", pre=True, always=True)
-    def set_debug_from_env(cls, v: Any, values: Any) -> Any:
-        env = values.get("environment", "production")
-        if env == "development":
-            return True
-        if env == "production":
-            return False
-        return v
-
-    @validator("log_level", pre=True, always=True)
-    def set_log_level_from_env(cls, v: Any, values: Any) -> Any:
-        env = values.get("environment", "production")
-        if env == "development":
-            return "DEBUG"
-        if env == "production":
-            return "WARNING"
-        if env == "testing":
-            return "DEBUG"
-        return v
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "case_sensitive": False,
+        "protected_namespaces": (),
+    }
 
 
 settings = Settings()

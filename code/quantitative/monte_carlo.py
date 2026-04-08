@@ -319,6 +319,15 @@ class MCSimulator:
 
         return payoffs
 
+    def _price_only(self, payoff_spec: OptionPayoff) -> float:
+        """Price an option without computing Greeks (avoids recursion)."""
+        paths = self.generate_paths()
+        payoffs = self.calculate_payoff(paths, payoff_spec)
+        discounted_payoffs = payoffs * np.exp(
+            -self.params.risk_free_rate * self.params.time_horizon
+        )
+        return float(np.mean(discounted_payoffs))
+
     def price_option(
         self, payoff_spec: OptionPayoff, paths: Optional[np.ndarray] = None
     ) -> SimulationResult:
@@ -337,14 +346,12 @@ class MCSimulator:
         std_dev = np.std(discounted_payoffs)
         standard_error = std_dev / np.sqrt(self.params.num_simulations)
 
-        # 95% confidence interval (Z-score for 95% is approx 1.96)
         z_score = stats.norm.ppf(0.975)
         conf_interval = (
             option_price - z_score * standard_error,
             option_price + z_score * standard_error,
         )
 
-        # Greeks calculation (using finite difference for simplicity)
         greeks = self._calculate_greeks_finite_difference(payoff_spec)
 
         computation_time = (datetime.now() - start_time).total_seconds()
@@ -365,60 +372,39 @@ class MCSimulator:
     ) -> Dict[str, float]:
         """
         Calculate option Greeks using finite difference method.
+        Uses proper parameter copies to avoid mutating shared state.
         """
+        import copy
+
         greeks = {}
-        h = 0.01  # Small change for finite difference
+        h = 0.01
 
-        # Delta
-        params_up = self.params
-        params_up.initial_price += h
-        price_up = MCSimulator(params_up).price_option(payoff_spec).option_price
-        params_down = self.params
-        params_down.initial_price -= h
-        price_down = MCSimulator(params_down).price_option(payoff_spec).option_price
+        def _price_with(field: str, delta: float) -> float:
+            p = copy.copy(self.params)
+            setattr(p, field, getattr(p, field) + delta)
+            return MCSimulator(p)._price_only(payoff_spec)
+
+        price_up = _price_with("initial_price", h)
+        price_down = _price_with("initial_price", -h)
+        price_center = self._price_only(payoff_spec)
         greeks["delta"] = (price_up - price_down) / (2 * h)
-        params_up.initial_price -= h  # Reset
-        params_down.initial_price += h  # Reset
-
-        # Gamma
-        price_center = self.price_option(payoff_spec).option_price
         greeks["gamma"] = (price_up - 2 * price_center + price_down) / (h**2)
 
-        # Vega
         h_vol = 0.001
-        params_up = self.params
-        params_up.volatility += h_vol
-        price_up = MCSimulator(params_up).price_option(payoff_spec).option_price
-        params_down = self.params
-        params_down.volatility -= h_vol
-        price_down = MCSimulator(params_down).price_option(payoff_spec).option_price
-        greeks["vega"] = (price_up - price_down) / (2 * h_vol)
-        params_up.volatility -= h_vol  # Reset
-        params_down.volatility += h_vol  # Reset
+        greeks["vega"] = (
+            _price_with("volatility", h_vol) - _price_with("volatility", -h_vol)
+        ) / (2 * h_vol)
 
-        # Theta (approximated by changing time to expiry)
-        h_time = 1 / 365  # One day
-        params_up = self.params
-        params_up.time_horizon += h_time
-        price_up = MCSimulator(params_up).price_option(payoff_spec).option_price
-        params_down = self.params
-        params_down.time_horizon -= h_time
-        price_down = MCSimulator(params_down).price_option(payoff_spec).option_price
-        greeks["theta"] = -(price_up - price_down) / (2 * h_time)
-        params_up.time_horizon -= h_time  # Reset
-        params_down.time_horizon += h_time  # Reset
+        h_time = 1 / 365
+        greeks["theta"] = -(
+            _price_with("time_horizon", h_time) - _price_with("time_horizon", -h_time)
+        ) / (2 * h_time)
 
-        # Rho
         h_rate = 0.0001
-        params_up = self.params
-        params_up.risk_free_rate += h_rate
-        price_up = MCSimulator(params_up).price_option(payoff_spec).option_price
-        params_down = self.params
-        params_down.risk_free_rate -= h_rate
-        price_down = MCSimulator(params_down).price_option(payoff_spec).option_price
-        greeks["rho"] = (price_up - price_down) / (2 * h_rate)
-        params_up.risk_free_rate -= h_rate  # Reset
-        params_down.risk_free_rate += h_rate  # Reset
+        greeks["rho"] = (
+            _price_with("risk_free_rate", h_rate)
+            - _price_with("risk_free_rate", -h_rate)
+        ) / (2 * h_rate)
 
         return greeks
 
@@ -515,13 +501,16 @@ class MCSimulator:
         return {"num_simulations": num_sims_list.tolist(), "prices": prices}
 
 
-mc_simulator = MCSimulator(
-    SimulationParameters(
-        initial_price=100.0,
-        risk_free_rate=0.05,
-        volatility=0.2,
-        time_horizon=1.0,
-        time_steps=252,
-        num_simulations=10000,
+try:
+    mc_simulator = MCSimulator(
+        SimulationParameters(
+            initial_price=100.0,
+            risk_free_rate=0.05,
+            volatility=0.2,
+            time_horizon=1.0,
+            time_steps=252,
+            num_simulations=10000,
+        )
     )
-)
+except Exception:
+    mc_simulator = None

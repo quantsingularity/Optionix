@@ -25,13 +25,11 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import Boolean, Column, DateTime, Index, Integer, Numeric, String, Text
 from sqlalchemy.orm import Session
 
 from .security import ComplianceFramework, SecurityContext, security_service
 
 logger = logging.getLogger(__name__)
-from .models import Base
 
 
 class RiskLevel(str, Enum):
@@ -139,117 +137,6 @@ class AMLAlert:
     status: str
     assigned_to: Optional[str]
     resolution_notes: Optional[str]
-
-
-class KYCDocument(Base):
-    """KYC document verification table"""
-
-    __tablename__ = "kyc_documents"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String(100), nullable=False, index=True)
-    document_type = Column(String(50), nullable=False)
-    document_number = Column(String(100))
-    issuing_country = Column(String(3))
-    issue_date = Column(DateTime)
-    expiry_date = Column(DateTime)
-    verification_status = Column(String(20), default="pending")
-    verification_method = Column(String(50))
-    verification_date = Column(DateTime)
-    verified_by = Column(String(100))
-    document_hash = Column(String(64))
-    metadata = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    __table_args__ = (Index("idx_kyc_user_type", "user_id", "document_type"),)
-
-
-class SanctionsCheck(Base):
-    """Sanctions screening results table"""
-
-    __tablename__ = "sanctions_checks"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String(100), nullable=False, index=True)
-    check_type = Column(String(50), nullable=False)
-    screening_lists = Column(Text)
-    match_found = Column(Boolean, default=False)
-    match_score = Column(Numeric(5, 2))
-    match_details = Column(Text)
-    screening_date = Column(DateTime, default=datetime.utcnow, index=True)
-    screening_provider = Column(String(100))
-    status = Column(String(20), default="completed")
-    false_positive = Column(Boolean, default=False)
-    reviewed_by = Column(String(100))
-    review_date = Column(DateTime)
-    review_notes = Column(Text)
-    __table_args__ = (Index("idx_sanctions_user_date", "user_id", "screening_date"),)
-
-
-class TransactionMonitoring(Base):
-    """Transaction monitoring and AML alerts table"""
-
-    __tablename__ = "transaction_monitoring"
-    id = Column(Integer, primary_key=True, index=True)
-    transaction_id = Column(String(100), nullable=False, index=True)
-    user_id = Column(String(100), nullable=False, index=True)
-    transaction_type = Column(String(50), nullable=False)
-    amount = Column(Numeric(20, 8), nullable=False)
-    currency = Column(String(3), nullable=False)
-    counterparty = Column(String(255))
-    risk_score = Column(Numeric(5, 2), nullable=False)
-    risk_factors = Column(Text)
-    monitoring_rules_triggered = Column(Text)
-    alert_generated = Column(Boolean, default=False)
-    alert_severity = Column(String(20))
-    alert_status = Column(String(20))
-    false_positive = Column(Boolean, default=False)
-    investigation_notes = Column(Text)
-    investigated_by = Column(String(100))
-    investigation_date = Column(DateTime)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
-    __table_args__ = (
-        Index("idx_monitoring_user_date", "user_id", "created_at"),
-        Index("idx_monitoring_risk_score", "risk_score"),
-    )
-
-
-class ComplianceReport(Base):
-    """Regulatory compliance reports table"""
-
-    __tablename__ = "compliance_reports"
-    id = Column(Integer, primary_key=True, index=True)
-    report_type = Column(String(100), nullable=False, index=True)
-    regulation_type = Column(String(50), nullable=False)
-    reporting_period_start = Column(DateTime, nullable=False)
-    reporting_period_end = Column(DateTime, nullable=False)
-    report_data = Column(Text)
-    report_hash = Column(String(64))
-    generated_by = Column(String(100), nullable=False)
-    generated_at = Column(DateTime, default=datetime.utcnow)
-    submitted_to = Column(String(255))
-    submission_date = Column(DateTime)
-    submission_reference = Column(String(100))
-    status = Column(String(20), default="draft")
-    __table_args__ = (
-        Index("idx_reports_type_period", "report_type", "reporting_period_start"),
-    )
-
-
-class RiskAssessment(Base):
-    """Risk assessment results table"""
-
-    __tablename__ = "risk_assessments"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String(100), nullable=False, index=True)
-    assessment_type = Column(String(50), nullable=False)
-    risk_score = Column(Numeric(5, 2), nullable=False)
-    risk_level = Column(String(20), nullable=False)
-    risk_factors = Column(Text)
-    mitigation_measures = Column(Text)
-    assessment_date = Column(DateTime, default=datetime.utcnow, index=True)
-    assessed_by = Column(String(100))
-    next_review_date = Column(DateTime)
-    status = Column(String(20), default="active")
-    __table_args__ = (Index("idx_risk_user_date", "user_id", "assessment_date"),)
 
 
 class ComplianceService:

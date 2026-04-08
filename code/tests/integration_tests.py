@@ -180,8 +180,26 @@ class IntegrationTests(unittest.TestCase):
         self.assertIsNotNone(dupire_vol)
         self.assertGreater(dupire_vol, 0)
         vol_surface = VolatilitySurface()
-        vol_surface.fit_surface(self.market_data["SPY"]["options"])
-        interp_vol = vol_surface.get_volatility(450.0, 0.5)
+        from quantitative.advanced.volatility_surface import OptionData as VsOptionData
+
+        spot = self.market_data["SPY"]["price"]
+        strikes_arr = [430, 440, 450, 460, 470, 480]
+        expiries_arr = [0.083, 0.25, 0.5, 0.75, 1.0, 1.5]
+        option_data_objs = []
+        for strike in strikes_arr:
+            for tte in expiries_arr:
+                iv = 0.15 + 0.02 * abs(strike - spot) / spot + 0.01 * tte
+                option_data_objs.append(
+                    VsOptionData(
+                        strike=float(strike),
+                        expiry=float(tte),
+                        implied_volatility=float(iv),
+                        option_type="call",
+                        underlying_price=float(spot),
+                    )
+                )
+        vol_surface.fit_surface(option_data_objs, underlying_price=spot)
+        interp_vol = vol_surface.interpolate_volatility(450.0, 0.5)
         self.assertIsNotNone(interp_vol)
         self.assertGreater(interp_vol, 0)
         calibration = CalibrationEngine()

@@ -156,6 +156,16 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
 
 
+@app.get("/", tags=["System"])
+async def root():
+    """Root endpoint"""
+    return {
+        "message": "Welcome to Optionix API",
+        "status": "online",
+        "version": settings.app_version,
+    }
+
+
 # Health check endpoint
 @app.get("/health", response_model=HealthCheckResponse, tags=["System"])
 async def health_check():

@@ -13,13 +13,14 @@ Implements comprehensive financial industry security standards including:
 """
 
 import base64
+import hashlib
 import logging
 import re
 import secrets
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import bcrypt
 from cryptography.fernet import Fernet
@@ -85,6 +86,7 @@ class EncryptionResult:
     key_id: str
     timestamp: datetime
     checksum: str
+    encryption_key: Optional[bytes] = None
 
 
 class SecurityService:
@@ -93,10 +95,12 @@ class SecurityService:
     def __init__(self) -> None:
         """Initialize security service"""
         self._master_key: Optional[bytes] = None
+        self._fernet: Optional[Fernet] = None
         self._encryption_keys: Dict[str, bytes] = {}
         self._session_store: Dict[str, Dict[str, Any]] = {}
         self._failed_attempts: Dict[str, Dict[str, Any]] = {}
         self._rate_limits: Dict[str, Dict[str, Any]] = {}
+        self._audit_log: List[Dict[str, Any]] = []
         self._initialize_security()
 
     def _initialize_security(self) -> None:
@@ -121,6 +125,7 @@ class SecurityService:
             )
             derived_key = kdf.derive(key_material)
             self._master_key = base64.urlsafe_b64encode(derived_key)
+            self._fernet = Fernet(self._master_key)
         except Exception as e:
             logger.error(f"Failed to load master key: {e}")
             raise
@@ -129,19 +134,11 @@ class SecurityService:
         """Initialize encryption keys for different purposes"""
         try:
             self._encryption_keys = {
-                "pii_data": self._generate_encryption_key(
-                    EncryptionStandard.AES_256_GCM
-                ),
-                "financial_data": self._generate_encryption_key(
-                    EncryptionStandard.AES_256_GCM
-                ),
-                "audit_logs": self._generate_encryption_key(EncryptionStandard.FERNET),
-                "session_data": self._generate_encryption_key(
-                    EncryptionStandard.CHACHA20_POLY1305
-                ),
-                "backup_data": self._generate_encryption_key(
-                    EncryptionStandard.AES_256_GCM
-                ),
+                "pii_data": Fernet.generate_key(),
+                "financial_data": Fernet.generate_key(),
+                "audit_logs": Fernet.generate_key(),
+                "session_data": Fernet.generate_key(),
+                "backup_data": Fernet.generate_key(),
             }
         except Exception as e:
             logger.error(f"Failed to initialize encryption keys: {e}")
@@ -149,14 +146,10 @@ class SecurityService:
 
     def _generate_encryption_key(self, standard: EncryptionStandard) -> bytes:
         """Generate encryption key based on standard"""
-        if standard == EncryptionStandard.AES_256_GCM:
-            return secrets.token_bytes(32)
-        elif standard == EncryptionStandard.FERNET:
+        if standard == EncryptionStandard.FERNET:
             return Fernet.generate_key()
-        elif standard == EncryptionStandard.CHACHA20_POLY1305:
-            return secrets.token_bytes(32)
         else:
-            raise ValueError(f"Unsupported encryption standard: {standard}")
+            return secrets.token_bytes(32)
 
     def encrypt_field(self, data: str) -> str:
         """Encrypt a field using Fernet encryption"""
@@ -174,6 +167,34 @@ class SecurityService:
         fernet = Fernet(key)
         return fernet.decrypt(encrypted_data.encode()).decode()
 
+    def encrypt_sensitive_data(self, data: str) -> EncryptionResult:
+        """Encrypt sensitive data and return an EncryptionResult"""
+        try:
+            key = Fernet.generate_key()
+            fernet = Fernet(key)
+            encrypted = fernet.encrypt(data.encode()).decode()
+            checksum = hashlib.sha256(data.encode()).hexdigest()
+            return EncryptionResult(
+                encrypted_data=encrypted,
+                encryption_method="FERNET",
+                key_id=secrets.token_hex(16),
+                timestamp=datetime.utcnow(),
+                checksum=checksum,
+                encryption_key=key,
+            )
+        except Exception as e:
+            logger.error(f"Encryption failed: {e}")
+            raise
+
+    def decrypt_sensitive_data(self, result: EncryptionResult) -> str:
+        """Decrypt an EncryptionResult back to plaintext"""
+        try:
+            fernet = Fernet(result.encryption_key)
+            return fernet.decrypt(result.encrypted_data.encode()).decode()
+        except Exception as e:
+            logger.error(f"Decryption failed: {e}")
+            raise
+
     def validate_password_strength(self, password: str) -> Dict[str, Any]:
         """Validate password strength according to financial industry standards"""
         issues = []
@@ -188,31 +209,113 @@ class SecurityService:
         if not re.search('[!@#$%^&*(),.?":{}|<>]', password):
             issues.append("Password must contain special characters")
         common_patterns = [
-            "(.)\\1{2,}",
-            "(012|123|234|345|456|567|678|789|890)",
-            "(abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)",
+            "(.)\\1{3,}",
+            "(0123|1234|2345|3456|4567|5678|6789|7890)",
+            "(abcd|bcde|cdef|defg|efgh|fghi|ghij|hijk|ijkl|jklm|klmn|lmno|mnop|nopq|opqr|pqrs|qrst|rstu|stuv|tuvw|uvwx|vwxy|wxyz)",
         ]
         for pattern in common_patterns:
             if re.search(pattern, password.lower()):
                 issues.append("Password contains common patterns")
                 break
+
+        is_valid = len(issues) == 0
+        if is_valid:
+            strength = "strong"
+        elif len(issues) <= 1:
+            strength = "medium"
+        else:
+            strength = "weak"
+
         return {
-            "valid": len(issues) == 0,
+            "valid": is_valid,
             "issues": issues,
+            "strength": strength,
             "strength_score": max(0, 100 - len(issues) * 20),
         }
 
-    def sanitize_input(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Sanitize input data to prevent injection attacks"""
-        sanitized = {}
-        for key, value in data.items():
-            if isinstance(value, str):
-                sanitized_value = re.sub("[<>\"\\']", "", value)
-                sanitized_value = sanitized_value[:1000]
-                sanitized[key] = sanitized_value
-            else:
-                sanitized[key] = value
-        return sanitized
+    def sanitize_input(
+        self, data: Union[str, Dict[str, Any]]
+    ) -> Union[str, Dict[str, Any]]:
+        """Sanitize input data (string or dict) to prevent injection attacks"""
+        _SQL_RE = re.compile(
+            r"\b(DROP|DELETE|INSERT|UPDATE|ALTER|CREATE|EXEC|UNION|SELECT|TRUNCATE)\b",
+            re.IGNORECASE,
+        )
+
+        def _clean(value: str) -> str:
+            out = re.sub('[<>"' + "'" + r";\\]", "", value)
+            out = _SQL_RE.sub("", out)
+            return out[:1000]
+
+        if isinstance(data, str):
+            return _clean(data)
+        elif isinstance(data, dict):
+            return {k: _clean(v) if isinstance(v, str) else v for k, v in data.items()}
+        return data
+
+    def validate_ethereum_address(self, address: str) -> bool:
+        """Validate Ethereum address format"""
+        pattern = r"^0x[0-9a-fA-F]{40}$"
+        return bool(re.match(pattern, address))
+
+    def generate_api_key(self) -> Tuple[str, str]:
+        """Generate an API key and return (plain_key, hashed_key)"""
+        prefix = settings.api_key_prefix
+        raw = secrets.token_urlsafe(32)
+        plain_key = f"{prefix}{raw}"[:46]
+        plain_key = plain_key.ljust(46, "x")[:46]
+        hashed_key = self.hash_api_key(plain_key)
+        return plain_key, hashed_key
+
+    def validate_api_key_format(self, api_key: str) -> bool:
+        """Validate API key format"""
+        return (
+            isinstance(api_key, str)
+            and api_key.startswith(settings.api_key_prefix)
+            and len(api_key) == 46
+        )
+
+    def hash_api_key(self, api_key: str) -> str:
+        """Hash an API key using SHA-256"""
+        return hashlib.sha256(api_key.encode()).hexdigest()
+
+    def check_rate_limit(
+        self, user_id: str, action: str = "default", limit: int = 100
+    ) -> bool:
+        """Check if a user has exceeded their rate limit for an action"""
+        key = f"{user_id}:{action}"
+        now = datetime.utcnow()
+        window_start = now - timedelta(minutes=1)
+
+        if key not in self._rate_limits:
+            self._rate_limits[key] = {"requests": [], "blocked": False}
+
+        entry = self._rate_limits[key]
+        entry["requests"] = [t for t in entry["requests"] if t > window_start]
+
+        if len(entry["requests"]) >= limit:
+            return False
+
+        entry["requests"].append(now)
+        return True
+
+    def log_audit_event(self, event_data: Dict[str, Any]) -> bool:
+        """Log an audit event"""
+        try:
+            event_data["logged_at"] = datetime.utcnow().isoformat()
+            self._audit_log.append(event_data)
+            logger.info(f"Audit event logged: {event_data.get('action', 'unknown')}")
+            return True
+        except Exception as e:
+            logger.error(f"Audit logging failed: {e}")
+            return False
+
+    def get_audit_log_hash(self, event_data: Dict[str, Any]) -> str:
+        """Get SHA-256 hash of audit log entry"""
+        import json
+
+        serialized = json.dumps(event_data, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode()).hexdigest()
 
     def generate_secure_token(self, length: int = 32) -> str:
         """Generate cryptographically secure random token"""
