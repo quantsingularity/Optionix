@@ -10,8 +10,16 @@ import time
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from web3 import Web3
-from web3.exceptions import ContractLogicError, Web3Exception
+try:
+    from web3 import Web3
+    from web3.exceptions import ContractLogicError, Web3Exception
+
+    _WEB3_AVAILABLE = True
+except ImportError:
+    Web3 = None  # type: ignore
+    ContractLogicError = Exception  # type: ignore
+    Web3Exception = Exception  # type: ignore
+    _WEB3_AVAILABLE = False
 
 from ..config import settings
 

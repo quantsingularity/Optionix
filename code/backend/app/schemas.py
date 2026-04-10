@@ -275,6 +275,8 @@ class MarketDataRequest(BaseModel):
 
 
 class VolatilityResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     symbol: str
     volatility: Decimal
     confidence: Optional[Decimal]

@@ -6,7 +6,7 @@ Implements SOX, Basel III, MiFID II, Dodd-Frank, and other financial regulations
 import hashlib
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, Optional
@@ -231,7 +231,7 @@ class FinancialStandardsService:
     ) -> FinancialAuditLog:
         """Create comprehensive financial audit log entry"""
         try:
-            audit_id = f"FA_{int(datetime.utcnow().timestamp())}_{transaction_id}"
+            audit_id = f"FA_{int(datetime.now(timezone.utc).replace(tzinfo=None).timestamp())}_{transaction_id}"
             state_data = json.dumps(new_state, sort_keys=True, default=str)
             state_hash = hashlib.sha256(state_data.encode()).hexdigest()
             audit_log = FinancialAuditLog(
@@ -251,7 +251,7 @@ class FinancialStandardsService:
                 compliance_status="compliant",
                 authorized_by=authorized_by,
                 authorization_level=authorization_level,
-                business_date=datetime.utcnow().date(),
+                business_date=datetime.now(timezone.utc).replace(tzinfo=None).date(),
             )
             db.add(audit_log)
             db.commit()
@@ -273,9 +273,7 @@ class FinancialStandardsService:
     ) -> DataIntegrityCheck:
         """Perform data integrity verification"""
         try:
-            check_id = (
-                f"DIC_{int(datetime.utcnow().timestamp())}_{entity_type}_{entity_id}"
-            )
+            check_id = f"DIC_{int(datetime.now(timezone.utc).replace(tzinfo=None).timestamp())}_{entity_type}_{entity_id}"
             variance = self._calculate_variance(expected_value, actual_value)
             integrity_status = "pass"
             discrepancy_amount = Decimal("0")
@@ -298,7 +296,7 @@ class FinancialStandardsService:
                 integrity_status=integrity_status,
                 discrepancy_amount=discrepancy_amount,
                 tolerance_threshold=tolerance_threshold,
-                business_date=datetime.utcnow().date(),
+                business_date=datetime.now(timezone.utc).replace(tzinfo=None).date(),
             )
             db.add(integrity_check)
             db.commit()
@@ -368,9 +366,7 @@ class FinancialStandardsService:
     ) -> ReconciliationRecord:
         """Perform financial reconciliation"""
         try:
-            reconciliation_id = (
-                f"RR_{int(datetime.utcnow().timestamp())}_{reconciliation_type}"
-            )
+            reconciliation_id = f"RR_{int(datetime.now(timezone.utc).replace(tzinfo=None).timestamp())}_{reconciliation_type}"
             difference = internal_balance - external_balance
             if tolerance_threshold is None:
                 tolerance_threshold = self.sox_controls.get(

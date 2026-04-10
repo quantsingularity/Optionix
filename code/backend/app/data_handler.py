@@ -19,7 +19,7 @@ import logging
 import re
 import uuid
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -285,7 +285,9 @@ class DataHandler:
                     errors=errors,
                     warnings=warnings,
                     sanitized_data=None,
-                    validation_timestamp=datetime.utcnow(),
+                    validation_timestamp=datetime.now(timezone.utc).replace(
+                        tzinfo=None
+                    ),
                     validation_id=validation_id,
                 )
             try:
@@ -312,7 +314,7 @@ class DataHandler:
                 errors=errors,
                 warnings=warnings,
                 sanitized_data=sanitized_data,
-                validation_timestamp=datetime.utcnow(),
+                validation_timestamp=datetime.now(timezone.utc).replace(tzinfo=None),
                 validation_id=validation_id,
             )
         except Exception as e:
@@ -322,7 +324,7 @@ class DataHandler:
                 errors=[f"Validation system error: {str(e)}"],
                 warnings=[],
                 sanitized_data=None,
-                validation_timestamp=datetime.utcnow(),
+                validation_timestamp=datetime.now(timezone.utc).replace(tzinfo=None),
                 validation_id=str(uuid.uuid4()),
             )
 
@@ -368,9 +370,13 @@ class DataHandler:
             elif data_type == "option":
                 expiration_date = data.get("expiration_date")
                 if expiration_date and isinstance(expiration_date, datetime):
-                    if expiration_date <= datetime.utcnow():
+                    if expiration_date <= datetime.now(timezone.utc).replace(
+                        tzinfo=None
+                    ):
                         errors.append("Option expiration date must be in the future")
-                    max_expiry = datetime.utcnow() + timedelta(days=365 * 5)
+                    max_expiry = datetime.now(timezone.utc).replace(
+                        tzinfo=None
+                    ) + timedelta(days=365 * 5)
                     if expiration_date > max_expiry:
                         warnings.append(
                             "Option expiration date is unusually far in the future"
@@ -443,8 +449,8 @@ class DataHandler:
                 encryption_key_id="master_key_v1",
                 data_type="sensitive_data",
                 classification=classification.value,
-                created_at=datetime.utcnow(),
-                expires_at=datetime.utcnow()
+                created_at=datetime.now(timezone.utc).replace(tzinfo=None),
+                expires_at=datetime.now(timezone.utc).replace(tzinfo=None)
                 + timedelta(days=self.retention_policies[classification]),
             )
             self.db_session.add(encrypted_model)
@@ -464,10 +470,9 @@ class DataHandler:
             )
             if not encrypted_model:
                 raise ValueError(f"Data not found: {data_id}")
-            if (
-                encrypted_model.expires_at
-                and encrypted_model.expires_at < datetime.utcnow()
-            ):
+            if encrypted_model.expires_at and encrypted_model.expires_at < datetime.now(
+                timezone.utc
+            ).replace(tzinfo=None):
                 raise ValueError(f"Data has expired: {data_id}")
             decrypted_data = self.cipher_suite.decrypt(encrypted_model.encrypted_data)
             data_json = decrypted_data.decode()
@@ -496,7 +501,9 @@ class DataHandler:
                         ).hexdigest()[:16]
             anonymized["_anonymized"] = True
             anonymized["_anonymization_level"] = anonymization_level
-            anonymized["_anonymization_timestamp"] = datetime.utcnow().isoformat()
+            anonymized["_anonymization_timestamp"] = (
+                datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
+            )
             return anonymized
         except Exception as e:
             logger.error(f"Data anonymization failed: {e}")
@@ -563,7 +570,7 @@ class DataHandler:
     def _store_quality_metrics(self, data_type: str, scores: Dict[str, float]) -> Any:
         """Store data quality metrics"""
         try:
-            metric_id = f"{data_type}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+            metric_id = f"{data_type}_{datetime.now(timezone.utc).replace(tzinfo=None).strftime('%Y%m%d_%H%M%S')}"
             metrics_model = DataQualityMetrics(
                 metric_id=metric_id,
                 data_type=data_type,
@@ -571,7 +578,7 @@ class DataHandler:
                 accuracy_score=scores["accuracy"],
                 consistency_score=scores["consistency"],
                 validity_score=scores["validity"],
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc).replace(tzinfo=None),
                 metadata={"overall_score": scores["overall"]},
             )
             self.db_session.add(metrics_model)
@@ -596,7 +603,7 @@ class DataHandler:
                 operation=operation,
                 data_type=data_type,
                 user_id=user_id,
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc).replace(tzinfo=None),
                 data_hash=data_hash,
                 classification=classification,
                 metadata=metadata or {},
@@ -638,7 +645,9 @@ class DataHandler:
                 "is_valid": is_valid,
                 "error_count": len(errors),
                 "warning_count": len(warnings),
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc)
+                .replace(tzinfo=None)
+                .isoformat(),
             }
             self.redis_client.lpush("validation_logs", json.dumps(log_data))
             self.redis_client.ltrim("validation_logs", 0, 999)
@@ -655,7 +664,7 @@ class DataHandler:
             )
             if not encrypted_model:
                 return {"status": "not_found"}
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc).replace(tzinfo=None)
             expires_at = encrypted_model.expires_at
             if expires_at:
                 days_until_expiry = (expires_at - now).days
@@ -679,7 +688,7 @@ class DataHandler:
     def cleanup_expired_data(self) -> Dict[str, int]:
         """Clean up expired data"""
         try:
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc).replace(tzinfo=None)
             expired_data = (
                 self.db_session.query(EncryptedDataModel)
                 .filter(EncryptedDataModel.expires_at < now)

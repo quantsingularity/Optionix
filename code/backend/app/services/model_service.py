@@ -7,7 +7,7 @@ import hashlib
 import json
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 import numpy as np
@@ -148,7 +148,9 @@ class ModelService:
                     "volatility": volatility,
                     "confidence": None,
                     "model_version": "fallback_statistical",
-                    "prediction_timestamp": datetime.utcnow().isoformat(),
+                    "prediction_timestamp": datetime.now(timezone.utc)
+                    .replace(tzinfo=None)
+                    .isoformat(),
                     "features_used": list(market_data.keys()),
                 }
 
@@ -175,7 +177,9 @@ class ModelService:
                 "model_version": self.model_metadata.get(
                     "version", settings.model_version
                 ),
-                "prediction_timestamp": datetime.utcnow().isoformat(),
+                "prediction_timestamp": datetime.now(timezone.utc)
+                .replace(tzinfo=None)
+                .isoformat(),
                 "features_used": list(market_data.keys()),
             }
         except ValueError:
@@ -211,7 +215,7 @@ class ModelService:
             symbol = market_data.get("symbol", "UNKNOWN")
             market_record = MarketData(
                 symbol=symbol,
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc).replace(tzinfo=None),
                 open_price=float(market_data.get("open", 0)),
                 high_price=float(market_data.get("high", 0)),
                 low_price=float(market_data.get("low", 0)),

@@ -9,7 +9,7 @@ import logging
 import re
 import secrets
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -145,7 +145,7 @@ class SecurityService:
                 encrypted_data=encrypted,
                 encryption_method="FERNET",
                 key_id=secrets.token_hex(16),
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc).replace(tzinfo=None),
                 checksum=checksum,
                 encryption_key=key,
             )
@@ -242,7 +242,7 @@ class SecurityService:
         self, user_id: str, action: str = "default", limit: int = 100
     ) -> bool:
         key = f"{user_id}:{action}"
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         window_start = now - timedelta(minutes=1)
         if key not in self._rate_limits:
             self._rate_limits[key] = {"requests": [], "blocked": False}
@@ -255,7 +255,9 @@ class SecurityService:
 
     def log_audit_event(self, event_data: Dict[str, Any]) -> bool:
         try:
-            event_data["logged_at"] = datetime.utcnow().isoformat()
+            event_data["logged_at"] = (
+                datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
+            )
             self._audit_log.append(event_data)
             logger.info(f"Audit event logged: {event_data.get('action', 'unknown')}")
             return True

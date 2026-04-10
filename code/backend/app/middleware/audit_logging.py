@@ -6,7 +6,7 @@ Provides comprehensive audit trail for all critical operations.
 import json
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ class AuditLog:
 
     def __init__(self, action: str, **kwargs: Any) -> None:
         self.action = action
-        self.timestamp = datetime.utcnow().isoformat()
+        self.timestamp = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
         self.data = kwargs
 
 
@@ -80,7 +80,7 @@ class AuditLogger:
             "ip_address": ip_address,
             "user_agent": user_agent,
             "status": status,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
         }
         if additional_context:
             event.update(additional_context)

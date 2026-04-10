@@ -8,7 +8,7 @@ import hashlib
 import logging
 import secrets
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from io import BytesIO
 from typing import Any, Dict, List, Optional
@@ -192,7 +192,7 @@ class AuthService:
         self, data: dict, expires_delta: Optional[timedelta] = None
     ) -> str:
         to_encode = data.copy()
-        expire = datetime.utcnow() + (
+        expire = datetime.now(timezone.utc).replace(tzinfo=None) + (
             expires_delta
             if expires_delta
             else timedelta(minutes=settings.access_token_expire_minutes)
@@ -202,7 +202,9 @@ class AuthService:
 
     def create_refresh_token(self, data: dict) -> str:
         to_encode = data.copy()
-        expire = datetime.utcnow() + timedelta(days=settings.refresh_token_expire_days)
+        expire = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(
+            days=settings.refresh_token_expire_days
+        )
         to_encode.update({"exp": expire, "type": "refresh"})
         return jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
 
@@ -222,7 +224,10 @@ class AuthService:
         """Check failed login attempts. Returns {"locked": bool, "count": int}."""
         attempts = self._failed_attempts.get(key, {"count": 0, "locked_until": None})
         locked_until = attempts.get("locked_until")
-        if locked_until and datetime.utcnow() < locked_until:
+        if (
+            locked_until
+            and datetime.now(timezone.utc).replace(tzinfo=None) < locked_until
+        ):
             return {"locked": True, "count": attempts["count"]}
         return {"locked": False, "count": attempts["count"]}
 
@@ -231,7 +236,9 @@ class AuthService:
             self._failed_attempts[key] = {"count": 0, "locked_until": None}
         self._failed_attempts[key]["count"] += 1
         if self._failed_attempts[key]["count"] >= settings.max_failed_login_attempts:
-            self._failed_attempts[key]["locked_until"] = datetime.utcnow() + timedelta(
+            self._failed_attempts[key]["locked_until"] = datetime.now(
+                timezone.utc
+            ).replace(tzinfo=None) + timedelta(
                 minutes=settings.account_lockout_duration_minutes
             )
 
@@ -317,9 +324,17 @@ rbac_service = RBACService()
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(
+        HTTPBearer(auto_error=False)
+    ),
 ) -> dict:
     """Get current authenticated user from JWT token"""
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     token = credentials.credentials
     payload = auth_service.verify_token(token)
     if payload is None:

@@ -2,5 +2,6 @@
 
 from .compliance_service import compliance_service
 from .financial_service import FinancialCalculationService
+from .health_service import health_service
 
-__all__ = ["compliance_service", "FinancialCalculationService"]
+__all__ = ["compliance_service", "FinancialCalculationService", "health_service"]

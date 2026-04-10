@@ -6,7 +6,7 @@ Provides comprehensive security features including headers, rate limiting, and v
 import logging
 import time
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Optional
 
 from fastapi import Request, Response, status
@@ -262,7 +262,9 @@ class AuditLoggingMiddleware(BaseHTTPMiddleware):
         if self._should_log_request(request):
             try:
                 log_entry = {
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(timezone.utc)
+                    .replace(tzinfo=None)
+                    .isoformat(),
                     "method": request.method,
                     "url": str(request.url),
                     "status_code": response.status_code,

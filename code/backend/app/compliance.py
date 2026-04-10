@@ -20,7 +20,7 @@ import hashlib
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
@@ -222,7 +222,7 @@ class ComplianceService:
                     security_level="confidential",
                     permissions=["kyc_verification"],
                     mfa_verified=True,
-                    timestamp=datetime.utcnow(),
+                    timestamp=datetime.now(timezone.utc).replace(tzinfo=None),
                 ),
                 resource="kyc_data",
                 action="verification",
@@ -240,7 +240,7 @@ class ComplianceService:
                 "sanctions_result": sanctions_result,
                 "document_verification": document_verification,
                 "pep_check": pep_check,
-                "verification_date": datetime.utcnow(),
+                "verification_date": datetime.now(timezone.utc).replace(tzinfo=None),
                 "compliance_frameworks": [
                     ComplianceFramework.GDPR.value,
                     ComplianceFramework.AML.value,
@@ -254,7 +254,9 @@ class ComplianceService:
     async def _calculate_kyc_risk_score(self, kyc_data: KYCData) -> float:
         """Calculate risk score based on KYC data"""
         risk_score = 0.0
-        age = (datetime.utcnow() - kyc_data.date_of_birth).days / 365.25
+        age = (
+            datetime.now(timezone.utc).replace(tzinfo=None) - kyc_data.date_of_birth
+        ).days / 365.25
         if age < 18:
             risk_score += 20
         elif age < 25:
@@ -313,7 +315,7 @@ class ComplianceService:
                 "match_found": overall_match,
                 "highest_score": highest_score,
                 "screening_results": screening_results,
-                "screening_date": datetime.utcnow(),
+                "screening_date": datetime.now(timezone.utc).replace(tzinfo=None),
             }
         except Exception as e:
             logger.error(f"Sanctions screening failed for user {user_id}: {e}")
@@ -348,7 +350,7 @@ class ComplianceService:
                 document_type=doc_type,
                 verification_status="verified",
                 verification_method="automated",
-                verification_date=datetime.utcnow(),
+                verification_date=datetime.now(timezone.utc).replace(tzinfo=None),
                 verified_by="system",
             )
             db.add(kyc_doc)
@@ -356,7 +358,7 @@ class ComplianceService:
         return {
             "status": overall_status,
             "verification_results": verification_results,
-            "verification_date": datetime.utcnow(),
+            "verification_date": datetime.now(timezone.utc).replace(tzinfo=None),
         }
 
     async def _check_pep_status(
@@ -367,7 +369,7 @@ class ComplianceService:
             "is_pep": False,
             "pep_category": None,
             "confidence_score": 0.0,
-            "check_date": datetime.utcnow(),
+            "check_date": datetime.now(timezone.utc).replace(tzinfo=None),
         }
 
     def _determine_kyc_status(
@@ -499,7 +501,7 @@ class ComplianceService:
         triggered_rules: List[str],
     ) -> AMLAlert:
         """Generate AML alert"""
-        alert_id = f"AML_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{user_id[:8]}"
+        alert_id = f"AML_{datetime.now(timezone.utc).replace(tzinfo=None).strftime('%Y%m%d_%H%M%S')}_{user_id[:8]}"
         severity = RiskLevel.HIGH if risk_score > 80 else RiskLevel.MEDIUM
         alert = AMLAlert(
             alert_id=alert_id,
@@ -509,7 +511,7 @@ class ComplianceService:
             severity=severity,
             description=f"High-risk transaction detected (score: {risk_score})",
             triggered_rules=triggered_rules,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc).replace(tzinfo=None),
             status="open",
         )
         return alert
@@ -557,7 +559,7 @@ class ComplianceService:
                 "period": {"start": start_date, "end": end_date},
                 "data": report_data,
                 "hash": report_hash,
-                "generated_at": datetime.utcnow(),
+                "generated_at": datetime.now(timezone.utc).replace(tzinfo=None),
             }
         except Exception as e:
             logger.error(f"Report generation failed: {e}")

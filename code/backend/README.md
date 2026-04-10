@@ -1,459 +1,120 @@
 # Optionix Backend
 
-A comprehensive, enterprise-grade backend for options trading platform with advanced security, compliance, and financial standards implementation.
+Production-grade FastAPI backend for the Optionix options trading platform.
 
-## 🚀 Features
+## Features
 
-### Core Trading Platform
+| Category | Details |
+|---|---|
+| **Auth** | JWT access + refresh tokens, bcrypt passwords, MFA (TOTP), account lockout |
+| **RBAC** | 9 roles (super_admin → viewer), granular permissions |
+| **Security** | AES-256 field encryption, input sanitisation, security headers, rate limiting |
+| **Compliance** | KYC/AML validation, sanctions screening, SAR generation, GDPR logs |
+| **Financial** | Black-Scholes pricing, Greeks (Δ Γ Θ ν ρ), VaR, margin/liquidation |
+| **ML** | Volatility prediction via scikit-learn; Parkinson statistical fallback |
+| **Blockchain** | Optional Web3/Ethereum contract interaction |
+| **Observability** | Structured logging, Prometheus metrics, health endpoint |
 
-- **Options Trading**: Comprehensive options trading with real-time pricing
-- **Portfolio Management**: Advanced portfolio tracking and analytics
-- **Risk Management**: Real-time risk monitoring and position management
-- **Market Data**: Live market data integration and volatility modeling
-
-### 🔒 Security
-
-- **Multi-Factor Authentication (MFA)**: TOTP-based 2FA with backup codes
-- **Role-Based Access Control (RBAC)**: Granular permission system
-- **Advanced Rate Limiting**: Intelligent rate limiting with burst protection
-- **Data Encryption**: Field-level and document-level encryption
-- **Security Headers**: Comprehensive security headers implementation
-- **Input Validation**: Advanced input sanitization and validation
-- **API Key Management**: Secure API key generation and management
-- **Session Management**: Secure session handling with Redis
-
-### 📋 Compliance & Regulatory
-
-- **KYC/AML**: Know Your Customer and Anti-Money Laundering
-- **Sanctions Screening**: Real-time sanctions list checking
-- **Transaction Monitoring**: Advanced transaction monitoring and alerting
-- **GDPR Compliance**: Data protection and privacy rights management
-- **Audit Trails**: Comprehensive audit logging for all operations
-- **Regulatory Reporting**: Automated regulatory report generation
-
-### 💰 Financial Standards
-
-- **SOX Compliance**: Sarbanes-Oxley Act compliance controls
-- **Basel III**: Risk management and capital adequacy monitoring
-- **MiFID II**: Markets in Financial Instruments Directive compliance
-- **Dodd-Frank**: Financial reform compliance
-- **Data Integrity**: Financial data integrity verification
-- **Reconciliation**: Automated financial reconciliation processes
-- **Risk Metrics**: Value at Risk (VaR) and other risk calculations
-
-### 🛡️ Data Protection
-
-- **PII Detection**: Automatic detection of personally identifiable information
-- **Data Masking**: Intelligent data masking for logs and exports
-- **Encryption at Rest**: Database and file encryption
-- **Encryption in Transit**: TLS/SSL for all communications
-- **Data Retention**: Automated data retention policy enforcement
-- **Right to be Forgotten**: GDPR data deletion capabilities
-
-## 🏗️ Architecture
-
-### Technology Stack
-
-- **Framework**: FastAPI with async support
-- **Database**: PostgreSQL with SQLAlchemy ORM
-- **Cache**: Redis for session management and caching
-- **Authentication**: JWT with refresh tokens
-- **Encryption**: AES-256-GCM for data encryption
-- **Monitoring**: Structured logging with audit trails
-- **Testing**: Comprehensive test suite with pytest
-
-### Security Architecture
+## Project Structure
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Load Balancer │    │   WAF/Firewall  │    │   Rate Limiter  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │   API Gateway   │
-                    └─────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │  FastAPI App    │
-                    │  - Auth Layer   │
-                    │  - RBAC         │
-                    │  - Validation   │
-                    └─────────────────┘
-                                 │
-         ┌───────────────────────┼───────────────────────┐
-         │                       │                       │
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   PostgreSQL    │    │     Redis       │    │  Audit Store    │
-│   (Encrypted)   │    │   (Sessions)    │    │   (Immutable)   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+backend/
+├── app/
+│   ├── api/                    # Route handlers
+│   │   ├── __init__.py         # Central APIRouter aggregator
+│   │   ├── auth.py             # /auth/* endpoints
+│   │   └── market.py           # /market/* endpoints
+│   ├── middleware/
+│   │   ├── security.py         # Rate-limit, security headers, audit logging
+│   │   ├── audit_logging.py    # Request-level audit middleware
+│   │   └── rate_limiting.py    # Re-export shim
+│   ├── services/
+│   │   ├── financial_service.py    # Black-Scholes, VaR, PnL, fees
+│   │   ├── compliance_service.py   # KYC, AML, SAR, sanctions
+│   │   ├── model_service.py        # ML volatility prediction
+│   │   ├── pricing_engine.py       # Greeks + Monte Carlo pricing
+│   │   ├── risk_assessment.py      # VaR, ES, margin helpers
+│   │   ├── health_service.py       # Aggregated service health
+│   │   ├── blockchain_service.py   # Ethereum / Web3 (optional)
+│   │   ├── risk_management/        # Advanced risk engine
+│   │   └── trade_execution/        # Circuit breaker + execution engine
+│   ├── auth.py                 # AuthService, MFAService, RBACService, JWT
+│   ├── config.py               # Pydantic settings (env-driven)
+│   ├── database.py             # SQLAlchemy engine + session factory
+│   ├── models.py               # ORM models (User, Account, Trade, …)
+│   ├── schemas.py              # Pydantic request/response schemas
+│   ├── security.py             # Encryption, API-key mgmt, sanitisation
+│   ├── compliance.py           # Additional compliance utilities
+│   ├── data_protection.py      # GDPR field encryption, consent logs
+│   ├── financial_standards.py  # SOX / MiFID II / Dodd-Frank helpers
+│   ├── data_handler.py         # Data validation & quality service
+│   ├── monitoring.py           # Real-time monitoring & alerting
+│   └── main.py                 # FastAPI app factory + lifespan
+├── tests/                      # 189+ tests across 12 test modules
+│   ├── conftest.py
+│   ├── test_auth.py
+│   ├── test_compliance.py
+│   ├── test_financial.py
+│   ├── test_health.py
+│   ├── test_integration.py
+│   ├── test_market.py
+│   ├── test_models.py
+│   ├── test_monitoring.py
+│   ├── test_pricing.py
+│   ├── test_pricing_engine.py
+│   ├── test_security.py
+│   └── test_system.py
+├── .env.example
+├── .gitignore
+├── Makefile
+├── pyproject.toml
+├── pytest.ini
+└── requirements.txt
 ```
 
-### Compliance Architecture
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  Transaction    │    │   Compliance    │    │   Regulatory    │
-│   Monitoring    │    │    Engine       │    │   Reporting     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │  Risk Engine    │
-                    │  - VaR Calc     │
-                    │  - Limits       │
-                    │  - Alerts       │
-                    └─────────────────┘
-                                 │
-         ┌───────────────────────┼───────────────────────┐
-         │                       │                       │
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   KYC/AML       │    │   Sanctions     │    │   Data Integrity│
-│   Verification  │    │   Screening     │    │   Monitoring    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Python 3.11+
-- PostgreSQL 13+
-- Redis 6+
-- Docker (optional)
-
-### Installation
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/quantsingularity/optionix.git
-   cd optionix/code/backend
-   ```
-
-2. **Create virtual environment**
-
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install dependencies**
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Set up environment variables**
-
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
-
-5. **Initialize database**
-
-   ```bash
-   alembic upgrade head
-   ```
-
-6. **Run the application**
-   ```bash
-   uvicorn app:app --host 0.0.0.0 --port 8000 --reload
-   ```
-
-### Docker Setup
-
-1. **Build and run with Docker Compose**
-   ```bash
-   docker-compose up -d
-   ```
-
-## 📝 Configuration
-
-### Environment Variables
-
-Create a `.env` file with the following variables:
-
-```env
-# Application
-APP_NAME=Optionix Trading Platform
-APP_VERSION=2.0.0
-ENVIRONMENT=production
-DEBUG=false
-
-# Database
-DATABASE_URL=postgresql://user:password@localhost/optionix
-REDIS_URL=redis://localhost:6379/0
-
-# Security
-SECRET_KEY=your-super-secret-key-change-in-production-32-chars-minimum
-ENCRYPTION_KEY=your-encryption-key-exactly-32-chars
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-REFRESH_TOKEN_EXPIRE_DAYS=7
-
-# Compliance
-KYC_REQUIRED=true
-AML_MONITORING_ENABLED=true
-SANCTIONS_SCREENING_ENABLED=true
-SOX_COMPLIANCE_ENABLED=true
-MIFID_II_REPORTING_ENABLED=true
-
-# Risk Management
-DEFAULT_LEVERAGE_LIMIT=10.0
-MAX_LEVERAGE_LIMIT=100.0
-VAR_CONFIDENCE_LEVEL=0.95
-
-# External Services
-ETHEREUM_RPC_URL=https://mainnet.infura.io/v3/your-project-id
-EMAIL_SERVICE_API_KEY=your-email-service-api-key
-SMS_SERVICE_API_KEY=your-sms-service-api-key
-```
-
-## 🔐 Security Features
-
-### Authentication & Authorization
-
-- JWT-based authentication with refresh tokens
-- Multi-factor authentication (TOTP)
-- Role-based access control (RBAC)
-- Session management with Redis
-- Account lockout protection
-- Password policy enforcement
-
-### Data Protection
-
-- AES-256-GCM encryption for sensitive data
-- Field-level encryption for PII
-- Data masking for logs and exports
-- Secure key management
-- GDPR compliance features
-
-### API Security
-
-- Rate limiting with Redis backend
-- Input validation and sanitization
-- SQL injection prevention
-- XSS protection
-- CSRF protection
-- Security headers implementation
-
-## 📊 Compliance Features
-
-### KYC/AML
-
-- Customer verification
-- Document verification
-- Risk scoring
-- Ongoing monitoring
-- Sanctions screening
-- PEP (Politically Exposed Person) checks
-
-### Regulatory Compliance
-
-- SOX controls implementation
-- MiFID II transaction reporting
-- Dodd-Frank compliance
-- Basel III risk monitoring
-- CFTC reporting
-- Audit trail maintenance
-
-### Data Privacy
-
-- GDPR compliance
-- Data subject rights
-- Consent management
-- Data retention policies
-- Right to be forgotten
-- Data portability
-
-## 📈 Risk Management
-
-### Risk Metrics
-
-- Value at Risk (VaR) calculation
-- Expected Shortfall
-- Leverage ratio monitoring
-- Liquidity ratio tracking
-- Concentration risk analysis
-- Counterparty risk assessment
-
-### Position Management
-
-- Real-time position monitoring
-- Margin requirement calculation
-- Liquidation risk assessment
-- Stop-loss and take-profit orders
-- Portfolio-level risk limits
-
-### Compliance Monitoring
-
-- Transaction monitoring
-- Unusual activity detection
-- Threshold breach alerts
-- Regulatory limit monitoring
-- Risk limit enforcement
-
-## 🧪 Testing
-
-### Running Tests
+## Quick Start
 
 ```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=. --cov-report=html
-
-# Run specific test categories
-pytest -m "security"
-pytest -m "compliance"
-pytest -m "financial"
-
-# Run performance tests
-pytest -m "performance"
-```
-
-### Test Categories
-
-- **Unit Tests**: Individual component testing
-- **Integration Tests**: Service integration testing
-- **Security Tests**: Security feature validation
-- **Compliance Tests**: Regulatory compliance verification
-- **Performance Tests**: Load and performance testing
-- **End-to-End Tests**: Complete workflow testing
-
-## 📚 API Documentation
-
-### Interactive Documentation
-
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-
-### Key Endpoints
-
-#### Authentication
-
-- `POST /auth/register` - User registration
-- `POST /auth/login` - User login
-- `POST /auth/mfa/setup` - MFA setup
-- `POST /auth/mfa/verify` - MFA verification
-- `POST /auth/refresh` - Token refresh
-
-#### Trading
-
-- `POST /trades` - Create trade
-- `GET /trades` - List trades
-- `GET /trades/{trade_id}` - Get trade details
-- `DELETE /trades/{trade_id}` - Cancel trade
-
-#### Compliance
-
-- `POST /kyc/submit` - Submit KYC data
-- `GET /compliance/risk-metrics` - Get risk metrics
-- `GET /compliance/sanctions-check` - Sanctions screening
-- `POST /compliance/report` - Generate compliance report
-
-#### Risk Management
-
-- `GET /risk/positions` - Position risk analysis
-- `GET /risk/portfolio` - Portfolio risk metrics
-- `POST /risk/limits` - Update risk limits
-
-## 🔧 Development
-
-### Code Quality
-
-- **Linting**: Black, isort, flake8
-- **Type Checking**: mypy
-- **Security Scanning**: bandit, safety
-- **Pre-commit Hooks**: Automated code quality checks
-
-### Development Setup
-
-```bash
-# Install development dependencies
+cd backend
+cp .env.example .env          # fill in SECRET_KEY, ENCRYPTION_KEY, DATABASE_URL
 pip install -r requirements.txt
-
-# Set up pre-commit hooks
-pre-commit install
-
-# Run code formatting
-black .
-isort .
-
-# Run linting
-flake8 .
-mypy .
-
-# Run security scan
-bandit -r .
-safety check
+make run                      # starts uvicorn with --reload
 ```
 
-## 🚀 Deployment
+API docs: http://localhost:8000/docs
 
-### Production Deployment
-
-1. **Environment Setup**
-   - Configure production environment variables
-   - Set up SSL certificates
-   - Configure firewall rules
-   - Set up monitoring and logging
-
-2. **Database Migration**
-
-   ```bash
-   alembic upgrade head
-   ```
-
-3. **Application Deployment**
-   ```bash
-   gunicorn app:app -w 4 -k uvicorn.workers.UvicornWorker
-   ```
-
-### Docker Deployment
+## Running Tests
 
 ```bash
-# Build production image
-docker build -t optionix:latest .
-
-# Run with Docker Compose
-docker-compose -f docker-compose.prod.yml up -d
+make test           # run all 189 tests
+make test-cov       # with HTML coverage report
 ```
 
-### Kubernetes Deployment
+## Key Environment Variables
+
+| Variable | Required | Notes |
+|---|---|---|
+| `SECRET_KEY` | ✅ | ≥ 32 random chars |
+| `ENCRYPTION_KEY` | ✅ | Exactly 32 chars |
+| `DATABASE_URL` | ✅ | PostgreSQL in prod; SQLite auto-used in tests |
+| `ENVIRONMENT` | — | `development` / `staging` / `production` / `testing` |
+
+See `.env.example` for the full list.
+
+## API Endpoints
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/` | — | Welcome / status |
+| GET | `/health` | — | Full service health |
+| POST | `/auth/register` | — | Create account |
+| POST | `/auth/login` | — | Login → JWT pair |
+| GET | `/auth/me` | 🔒 | Current user profile |
+| POST | `/auth/refresh` | — | Refresh access token |
+| POST | `/market/volatility` | — | Volatility prediction |
+
+## Docker
 
 ```bash
-# Apply Kubernetes manifests
-kubectl apply -f k8s/
+docker compose up --build
 ```
-
-## 📊 Monitoring & Observability
-
-### Metrics
-
-- Application performance metrics
-- Business metrics (trades, users, revenue)
-- Security metrics (failed logins, blocked requests)
-- Compliance metrics (KYC completion, risk breaches)
-
-### Logging
-
-- Structured logging with JSON format
-- Audit trail for all critical operations
-- Security event logging
-- Performance logging
-
-### Alerting
-
-- Real-time alerts for security incidents
-- Compliance violation alerts
-- System health alerts
-- Business metric alerts
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

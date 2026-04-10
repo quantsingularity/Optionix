@@ -6,7 +6,7 @@ Provides identity verification and transaction monitoring capabilities.
 import json
 import logging
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any, Dict, List
 
@@ -156,7 +156,7 @@ class ComplianceService:
             "sanctioned": is_sanctioned or country_sanctioned,
             "name_match": is_sanctioned,
             "country_sanctioned": country_sanctioned,
-            "checked_at": datetime.utcnow().isoformat(),
+            "checked_at": datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
             "lists_checked": ["OFAC", "UN", "EU"],
         }
 
@@ -165,7 +165,9 @@ class ComplianceService:
     ) -> Dict[str, Any]:
         """Monitor user transaction patterns for suspicious activity"""
         try:
-            cutoff_date = datetime.utcnow() - timedelta(days=lookback_days)
+            cutoff_date = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(
+                days=lookback_days
+            )
             trades = (
                 db.query(Trade)
                 .filter(
@@ -244,8 +246,10 @@ class ComplianceService:
             if not user:
                 raise ValueError("User not found")
             sar_report = {
-                "report_id": f"SAR_{user_id}_{int(datetime.utcnow().timestamp())}",
-                "generated_at": datetime.utcnow().isoformat(),
+                "report_id": f"SAR_{user_id}_{int(datetime.now(timezone.utc).replace(tzinfo=None).timestamp())}",
+                "generated_at": datetime.now(timezone.utc)
+                .replace(tzinfo=None)
+                .isoformat(),
                 "user_info": {
                     "user_id": user.user_id,
                     "email": user.email,
@@ -259,7 +263,8 @@ class ComplianceService:
                 "regulatory_requirements": {
                     "filing_required": True,
                     "filing_deadline": (
-                        datetime.utcnow() + timedelta(days=30)
+                        datetime.now(timezone.utc).replace(tzinfo=None)
+                        + timedelta(days=30)
                     ).isoformat(),
                     "regulatory_body": "FinCEN",
                     "report_type": "SAR",
@@ -310,7 +315,7 @@ class ComplianceService:
             if trade_value > self.daily_transaction_limit:
                 violations.append(f"Trade exceeds daily limit: ${trade_value}")
 
-            today = datetime.utcnow().date()
+            today = datetime.now(timezone.utc).replace(tzinfo=None).date()
             daily_trades = (
                 db.query(Trade)
                 .filter(

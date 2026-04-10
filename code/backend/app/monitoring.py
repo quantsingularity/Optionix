@@ -16,7 +16,7 @@ Implements comprehensive monitoring and compliance features:
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -203,7 +203,7 @@ class MonitoringService:
                 transaction_type=transaction_type,
                 amount=amount,
                 asset=transaction_data.get("asset"),
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc).replace(tzinfo=None),
                 status=transaction_data.get("status", "pending"),
                 extra_metadata=transaction_data,
                 risk_score=risk_score,
@@ -246,7 +246,9 @@ class MonitoringService:
                 self.db_session.query(TransactionLog)
                 .filter(
                     TransactionLog.user_id == user_id,
-                    TransactionLog.timestamp >= datetime.utcnow() - timedelta(hours=24),
+                    TransactionLog.timestamp
+                    >= datetime.now(timezone.utc).replace(tzinfo=None)
+                    - timedelta(hours=24),
                 )
                 .all()
             )
@@ -286,7 +288,7 @@ class MonitoringService:
     ) -> ComplianceAlert:
         """Generate compliance alert"""
         try:
-            alert_id = f"ALERT_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{transaction_data.get('transaction_id', 'UNKNOWN')}"
+            alert_id = f"ALERT_{datetime.now(timezone.utc).replace(tzinfo=None).strftime('%Y%m%d_%H%M%S')}_{transaction_data.get('transaction_id', 'UNKNOWN')}"
             severity = AlertSeverity.LOW
             if risk_score > 75:
                 severity = AlertSeverity.CRITICAL
@@ -301,7 +303,7 @@ class MonitoringService:
                 description=f"Compliance violations detected: {', '.join(violations)}",
                 user_id=transaction_data.get("user_id"),
                 transaction_id=transaction_data.get("transaction_id"),
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc).replace(tzinfo=None),
                 status="OPEN",
                 metadata={
                     "violations": violations,
@@ -349,7 +351,9 @@ class MonitoringService:
                 self.db_session.query(TransactionLog)
                 .filter(
                     TransactionLog.user_id == user_id,
-                    TransactionLog.timestamp >= datetime.utcnow() - timedelta(days=7),
+                    TransactionLog.timestamp
+                    >= datetime.now(timezone.utc).replace(tzinfo=None)
+                    - timedelta(days=7),
                 )
                 .all()
             )
@@ -377,7 +381,7 @@ class MonitoringService:
     ) -> RegulatoryReport:
         """Generate regulatory report"""
         try:
-            report_id = f"REP_{report_type}_{period}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+            report_id = f"REP_{report_type}_{period}_{datetime.now(timezone.utc).replace(tzinfo=None).strftime('%Y%m%d_%H%M%S')}"
             if report_type == "mifid_ii":
                 data = self._generate_mifid_ii_report(period)
             elif report_type == "emir":
@@ -390,7 +394,7 @@ class MonitoringService:
                 report_id=report_id,
                 report_type=report_type,
                 reporting_period=period,
-                generated_at=datetime.utcnow(),
+                generated_at=datetime.now(timezone.utc).replace(tzinfo=None),
                 data=data,
                 status="generated",
                 file_path=None,

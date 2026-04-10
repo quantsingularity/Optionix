@@ -8,7 +8,7 @@ import hashlib
 import json
 import logging
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -235,7 +235,11 @@ class DataProtectionService:
                 purpose=purpose,
                 retention_period=retention_period,
                 consent_given=consent_given,
-                consent_date=datetime.utcnow() if consent_given else None,
+                consent_date=(
+                    datetime.now(timezone.utc).replace(tzinfo=None)
+                    if consent_given
+                    else None
+                ),
             )
             db.add(log_entry)
             db.commit()
@@ -252,7 +256,9 @@ class DataProtectionService:
             if not user:
                 raise ValueError("User not found")
             export_data = {
-                "export_date": datetime.utcnow().isoformat(),
+                "export_date": datetime.now(timezone.utc)
+                .replace(tzinfo=None)
+                .isoformat(),
                 "user_id": user.user_id,
                 "email": user.email,
                 "full_name": user.full_name,
@@ -295,7 +301,7 @@ class DataProtectionService:
                 "request_id": request_id,
                 "status": "pending",
                 "estimated_completion": (
-                    datetime.utcnow() + timedelta(days=30)
+                    datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=30)
                 ).isoformat(),
             }
         except Exception as e:
