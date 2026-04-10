@@ -4,16 +4,16 @@ Production-grade FastAPI backend for the Optionix options trading platform.
 
 ## Features
 
-| Category | Details |
-|---|---|
-| **Auth** | JWT access + refresh tokens, bcrypt passwords, MFA (TOTP), account lockout |
-| **RBAC** | 9 roles (super_admin → viewer), granular permissions |
-| **Security** | AES-256 field encryption, input sanitisation, security headers, rate limiting |
-| **Compliance** | KYC/AML validation, sanctions screening, SAR generation, GDPR logs |
-| **Financial** | Black-Scholes pricing, Greeks (Δ Γ Θ ν ρ), VaR, margin/liquidation |
-| **ML** | Volatility prediction via scikit-learn; Parkinson statistical fallback |
-| **Blockchain** | Optional Web3/Ethereum contract interaction |
-| **Observability** | Structured logging, Prometheus metrics, health endpoint |
+| Category          | Details                                                                       |
+| ----------------- | ----------------------------------------------------------------------------- |
+| **Auth**          | JWT access + refresh tokens, bcrypt passwords, MFA (TOTP), account lockout    |
+| **RBAC**          | 9 roles (super_admin → viewer), granular permissions                          |
+| **Security**      | AES-256 field encryption, input sanitisation, security headers, rate limiting |
+| **Compliance**    | KYC/AML validation, sanctions screening, SAR generation, GDPR logs            |
+| **Financial**     | Black-Scholes pricing, Greeks (Δ Γ Θ ν ρ), VaR, margin/liquidation            |
+| **ML**            | Volatility prediction via scikit-learn; Parkinson statistical fallback        |
+| **Blockchain**    | Optional Web3/Ethereum contract interaction                                   |
+| **Observability** | Structured logging, Prometheus metrics, health endpoint                       |
 
 ## Project Structure
 
@@ -92,26 +92,26 @@ make test-cov       # with HTML coverage report
 
 ## Key Environment Variables
 
-| Variable | Required | Notes |
-|---|---|---|
-| `SECRET_KEY` | ✅ | ≥ 32 random chars |
-| `ENCRYPTION_KEY` | ✅ | Exactly 32 chars |
-| `DATABASE_URL` | ✅ | PostgreSQL in prod; SQLite auto-used in tests |
-| `ENVIRONMENT` | — | `development` / `staging` / `production` / `testing` |
+| Variable         | Required | Notes                                                |
+| ---------------- | -------- | ---------------------------------------------------- |
+| `SECRET_KEY`     | ✅       | ≥ 32 random chars                                    |
+| `ENCRYPTION_KEY` | ✅       | Exactly 32 chars                                     |
+| `DATABASE_URL`   | ✅       | PostgreSQL in prod; SQLite auto-used in tests        |
+| `ENVIRONMENT`    | —        | `development` / `staging` / `production` / `testing` |
 
 See `.env.example` for the full list.
 
 ## API Endpoints
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/` | — | Welcome / status |
-| GET | `/health` | — | Full service health |
-| POST | `/auth/register` | — | Create account |
-| POST | `/auth/login` | — | Login → JWT pair |
-| GET | `/auth/me` | 🔒 | Current user profile |
-| POST | `/auth/refresh` | — | Refresh access token |
-| POST | `/market/volatility` | — | Volatility prediction |
+| Method | Path                 | Auth | Description           |
+| ------ | -------------------- | ---- | --------------------- |
+| GET    | `/`                  | —    | Welcome / status      |
+| GET    | `/health`            | —    | Full service health   |
+| POST   | `/auth/register`     | —    | Create account        |
+| POST   | `/auth/login`        | —    | Login → JWT pair      |
+| GET    | `/auth/me`           | 🔒   | Current user profile  |
+| POST   | `/auth/refresh`      | —    | Refresh access token  |
+| POST   | `/market/volatility` | —    | Volatility prediction |
 
 ## Docker
 
