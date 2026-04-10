@@ -10,11 +10,9 @@ from .models import Base
 
 logger = logging.getLogger(__name__)
 
-# Determine pool class based on database type
 database_url = settings.database_url
 poolclass: Type[Pool]
 if database_url.startswith("sqlite"):
-    # SQLite needs special pooling
     poolclass = StaticPool if ":memory:" in database_url else NullPool
     connect_args = {"check_same_thread": False}
     pool_pre_ping = False
@@ -23,19 +21,21 @@ else:
     connect_args = {}
     pool_pre_ping = True
 
-try:
-    engine = create_engine(
-        database_url,
-        poolclass=poolclass,
-        pool_size=settings.database_pool_size if poolclass == QueuePool else None,
-        max_overflow=settings.database_max_overflow if poolclass == QueuePool else None,
-        pool_pre_ping=pool_pre_ping,
-        echo=settings.debug,
-        connect_args=connect_args,
+
+def _make_engine(url: str, pc: Type[Pool], ca: dict, ping: bool):
+    kwargs: dict = dict(
+        poolclass=pc, pool_pre_ping=ping, echo=settings.debug, connect_args=ca
     )
+    if pc == QueuePool:
+        kwargs["pool_size"] = settings.database_pool_size
+        kwargs["max_overflow"] = settings.database_max_overflow
+    return create_engine(url, **kwargs)
+
+
+try:
+    engine = _make_engine(database_url, poolclass, connect_args, pool_pre_ping)
 except Exception as e:
     logger.error(f"Failed to create database engine: {e}")
-    # Fallback to SQLite in-memory
     logger.warning("Falling back to SQLite in-memory database")
     engine = create_engine(
         "sqlite:///:memory:",
@@ -50,7 +50,6 @@ def create_tables() -> None:
     """Create all database tables"""
     global engine, SessionLocal
     try:
-        # Test connection first
         with engine.connect():
             pass
         Base.metadata.create_all(bind=engine)
@@ -58,7 +57,6 @@ def create_tables() -> None:
     except Exception as e:
         logger.error(f"Error creating database tables: {e}")
         logger.warning("Falling back to SQLite in-memory database")
-        # Recreate engine with SQLite
         engine = create_engine(
             "sqlite:///:memory:",
             poolclass=StaticPool,
@@ -70,12 +68,7 @@ def create_tables() -> None:
 
 
 def get_db() -> Generator[Session, None, None]:
-    """
-    Dependency to get database session
-
-    Yields:
-        Session: SQLAlchemy database session
-    """
+    """Dependency to get database session"""
     db = SessionLocal()
     try:
         yield db
@@ -84,10 +77,5 @@ def get_db() -> Generator[Session, None, None]:
 
 
 def get_db_session() -> Session:
-    """
-    Get a database session for direct use
-
-    Returns:
-        Session: SQLAlchemy database session
-    """
+    """Get a database session for direct use"""
     return SessionLocal()

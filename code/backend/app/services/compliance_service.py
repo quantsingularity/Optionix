@@ -21,7 +21,6 @@ class ComplianceService:
     """Service for KYC/AML compliance and regulatory requirements"""
 
     def __init__(self) -> None:
-        """Initialize compliance service"""
         self.suspicious_activity_threshold = Decimal("10000")
         self.daily_transaction_limit = Decimal("50000")
         self.high_risk_countries = {
@@ -54,17 +53,9 @@ class ComplianceService:
         }
 
     def validate_kyc_data(self, kyc_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Validate KYC data for completeness and format
-
-        Args:
-            kyc_data (Dict[str, Any]): KYC information
-
-        Returns:
-            Dict[str, Any]: Validation results
-        """
+        """Validate KYC data for completeness and format"""
         errors = []
-        warnings = []
+        warnings: List[str] = []
         required_fields = [
             "full_name",
             "date_of_birth",
@@ -77,13 +68,15 @@ class ComplianceService:
         for field in required_fields:
             if field not in kyc_data or not kyc_data[field]:
                 errors.append(f"Missing required field: {field}")
-        if "full_name" in kyc_data:
+
+        if "full_name" in kyc_data and kyc_data["full_name"]:
             name = kyc_data["full_name"].strip()
             if len(name) < 2:
                 errors.append("Full name must be at least 2 characters")
-            if not re.match("^[a-zA-Z\\s\\-'\\.]+$", name):
+            if not re.match(r"^[a-zA-Z\s\-'\.]+$", name):
                 errors.append("Full name contains invalid characters")
-        if "date_of_birth" in kyc_data:
+
+        if "date_of_birth" in kyc_data and kyc_data["date_of_birth"]:
             try:
                 dob = datetime.strptime(kyc_data["date_of_birth"], "%Y-%m-%d")
                 age = (datetime.now() - dob).days / 365.25
@@ -93,25 +86,29 @@ class ComplianceService:
                     errors.append("Invalid date of birth")
             except ValueError:
                 errors.append("Invalid date of birth format (use YYYY-MM-DD)")
-        if "nationality" in kyc_data:
+
+        if "nationality" in kyc_data and kyc_data["nationality"]:
             nationality = kyc_data["nationality"].upper()
             if len(nationality) != 2:
                 errors.append("Nationality must be a 2-letter country code")
-            if nationality in self.high_risk_countries:
+            elif nationality in self.high_risk_countries:
                 warnings.append("High-risk jurisdiction detected")
-        if "document_type" in kyc_data:
+
+        if "document_type" in kyc_data and kyc_data["document_type"]:
             valid_doc_types = ["passport", "national_id", "drivers_license"]
             if kyc_data["document_type"] not in valid_doc_types:
                 errors.append(
                     f"Invalid document type. Must be one of: {valid_doc_types}"
                 )
-        if "document_number" in kyc_data:
+
+        if "document_number" in kyc_data and kyc_data["document_number"]:
             doc_number = kyc_data["document_number"].strip()
             if len(doc_number) < 5:
                 errors.append("Document number too short")
-            if not re.match("^[A-Z0-9\\-]+$", doc_number.upper()):
+            elif not re.match(r"^[A-Z0-9\-]+$", doc_number.upper()):
                 errors.append("Document number contains invalid characters")
-        if "document_expiry" in kyc_data:
+
+        if "document_expiry" in kyc_data and kyc_data["document_expiry"]:
             try:
                 expiry = datetime.strptime(kyc_data["document_expiry"], "%Y-%m-%d")
                 if expiry < datetime.now():
@@ -120,6 +117,7 @@ class ComplianceService:
                     warnings.append("Document expires within 30 days")
             except ValueError:
                 errors.append("Invalid document expiry format (use YYYY-MM-DD)")
+
         return {
             "valid": len(errors) == 0,
             "errors": errors,
@@ -130,18 +128,7 @@ class ComplianceService:
     def _calculate_risk_score(
         self, kyc_data: Dict[str, Any], warnings: List[str]
     ) -> int:
-        """
-        Calculate risk score based on KYC data
-
-        Args:
-            kyc_data (Dict[str, Any]): KYC information
-            warnings (List[str]): Validation warnings
-
-        Returns:
-            int: Risk score (0-100, higher is riskier)
-        """
-        score = 0
-        score += len(warnings) * 10
+        score = len(warnings) * 10
         if kyc_data.get("nationality", "").upper() in self.high_risk_countries:
             score += 30
         if "date_of_birth" in kyc_data:
@@ -152,32 +139,19 @@ class ComplianceService:
                     score += 10
             except Exception:
                 pass
-        doc_type = kyc_data.get("document_type", "")
-        if doc_type == "drivers_license":
+        if kyc_data.get("document_type") == "drivers_license":
             score += 5
         return min(score, 100)
 
     def check_sanctions_list(self, full_name: str, nationality: str) -> Dict[str, Any]:
-        """
-        Check against sanctions lists (simplified implementation)
-
-        Args:
-            full_name (str): Full name to check
-            nationality (str): Nationality code
-
-        Returns:
-            Dict[str, Any]: Sanctions check results
-        """
+        """Check against sanctions lists (simplified implementation)"""
         sanctioned_names = ["john doe", "jane smith", "test user"]
         name_lower = full_name.lower().strip()
         is_sanctioned = any(
-            (
-                sanctioned in name_lower or name_lower in sanctioned
-                for sanctioned in sanctioned_names
-            )
+            sanctioned in name_lower or name_lower in sanctioned
+            for sanctioned in sanctioned_names
         )
-        sanctioned_countries = self.high_risk_countries
-        country_sanctioned = nationality.upper() in sanctioned_countries
+        country_sanctioned = nationality.upper() in self.high_risk_countries
         return {
             "sanctioned": is_sanctioned or country_sanctioned,
             "name_match": is_sanctioned,
@@ -189,17 +163,7 @@ class ComplianceService:
     def monitor_transaction_patterns(
         self, user_id: int, db: Session, lookback_days: int = 30
     ) -> Dict[str, Any]:
-        """
-        Monitor user transaction patterns for suspicious activity
-
-        Args:
-            user_id (int): User ID to monitor
-            db (Session): Database session
-            lookback_days (int): Number of days to look back
-
-        Returns:
-            Dict[str, Any]: Monitoring results
-        """
+        """Monitor user transaction patterns for suspicious activity"""
         try:
             cutoff_date = datetime.utcnow() - timedelta(days=lookback_days)
             trades = (
@@ -218,12 +182,13 @@ class ComplianceService:
                     "total_volume": Decimal("0"),
                     "trade_count": 0,
                 }
-            total_volume = sum((trade.total_value for trade in trades))
+            total_volume = sum(trade.total_value for trade in trades)
             trade_count = len(trades)
             avg_trade_size = (
                 total_volume / trade_count if trade_count > 0 else Decimal("0")
             )
             alerts = []
+
             if total_volume > self.suspicious_activity_threshold:
                 alerts.append(
                     {
@@ -240,7 +205,7 @@ class ComplianceService:
                         "severity": "low",
                     }
                 )
-            max_trade = max((trade.total_value for trade in trades))
+            max_trade = max(trade.total_value for trade in trades)
             if max_trade > self.daily_transaction_limit:
                 alerts.append(
                     {
@@ -249,21 +214,7 @@ class ComplianceService:
                         "severity": "high",
                     }
                 )
-            daily_volumes = {}
-            for trade in trades:
-                date_key = trade.created_at.date()
-                daily_volumes[date_key] = (
-                    daily_volumes.get(date_key, Decimal("0")) + trade.total_value
-                )
-            for date, volume in daily_volumes.items():
-                if volume > self.daily_transaction_limit:
-                    alerts.append(
-                        {
-                            "type": "daily_limit_exceeded",
-                            "message": f"Daily limit exceeded on {date}: ${volume}",
-                            "severity": "high",
-                        }
-                    )
+
             return {
                 "suspicious": len(alerts) > 0,
                 "alerts": alerts,
@@ -287,17 +238,7 @@ class ComplianceService:
     def generate_sar_report(
         self, user_id: int, suspicious_activity: Dict[str, Any], db: Session
     ) -> Dict[str, Any]:
-        """
-        Generate Suspicious Activity Report (SAR)
-
-        Args:
-            user_id (int): User ID
-            suspicious_activity (Dict[str, Any]): Suspicious activity details
-            db (Session): Database session
-
-        Returns:
-            Dict[str, Any]: SAR report
-        """
+        """Generate Suspicious Activity Report (SAR)"""
         try:
             user = db.query(User).filter(User.id == user_id).first()
             if not user:
@@ -310,7 +251,9 @@ class ComplianceService:
                     "email": user.email,
                     "full_name": user.full_name,
                     "kyc_status": user.kyc_status,
-                    "account_created": user.created_at.isoformat(),
+                    "account_created": (
+                        user.created_at.isoformat() if user.created_at else None
+                    ),
                 },
                 "suspicious_activity": suspicious_activity,
                 "regulatory_requirements": {
@@ -330,6 +273,7 @@ class ComplianceService:
             audit_log = AuditLog(
                 user_id=user_id,
                 action="sar_generated",
+                action_category="compliance",
                 resource_type="compliance",
                 resource_id=sar_report["report_id"],
                 request_data=json.dumps(suspicious_activity),
@@ -346,20 +290,10 @@ class ComplianceService:
     def check_transaction_compliance(
         self, trade_data: Dict[str, Any], user_id: int, db: Session
     ) -> Dict[str, Any]:
-        """
-        Check if a transaction complies with regulations
-
-        Args:
-            trade_data (Dict[str, Any]): Trade information
-            user_id (int): User ID
-            db: Database session
-
-        Returns:
-            Dict[str, Any]: Compliance check results
-        """
+        """Check if a transaction complies with regulations"""
         try:
             violations = []
-            warnings = []
+            warnings: List[str] = []
             user = db.query(User).filter(User.id == user_id).first()
             if not user:
                 violations.append("User not found")
@@ -368,11 +302,14 @@ class ComplianceService:
                     "violations": violations,
                     "warnings": warnings,
                 }
+
             if user.kyc_status != "approved":
                 violations.append("KYC verification required")
+
             trade_value = Decimal(str(trade_data.get("total_value", 0)))
             if trade_value > self.daily_transaction_limit:
                 violations.append(f"Trade exceeds daily limit: ${trade_value}")
+
             today = datetime.utcnow().date()
             daily_trades = (
                 db.query(Trade)
@@ -383,13 +320,15 @@ class ComplianceService:
                 )
                 .all()
             )
-            daily_volume = sum((trade.total_value for trade in daily_trades))
+            daily_volume = sum(trade.total_value for trade in daily_trades)
             if daily_volume + trade_value > self.daily_transaction_limit:
                 violations.append("Daily volume limit would be exceeded")
+
             if trade_value > Decimal("10000"):
                 warnings.append(
                     "Large transaction - additional reporting may be required"
                 )
+
             return {
                 "compliant": len(violations) == 0,
                 "violations": violations,

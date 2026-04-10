@@ -8,7 +8,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class UserRole(str, Enum):
@@ -42,23 +42,17 @@ class ComplianceStatus(str, Enum):
 
 
 class BaseResponse(BaseModel):
-    """Base response schema with common fields"""
-
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     request_id: Optional[str] = None
 
 
 class ErrorResponse(BaseResponse):
-    """Error response schema"""
-
     error: str
     message: str
     details: Optional[Dict[str, Any]] = None
 
 
 class HealthCheckResponse(BaseResponse):
-    """Health check response schema"""
-
     status: str
     version: str
     services: Dict[str, str]
@@ -66,8 +60,6 @@ class HealthCheckResponse(BaseResponse):
 
 
 class UserCreate(BaseModel):
-    """User creation schema with validation"""
-
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=128)
     full_name: str = Field(..., min_length=2, max_length=255)
@@ -75,10 +67,12 @@ class UserCreate(BaseModel):
     marketing_consent: bool = False
     data_processing_consent: bool = True
 
-    @validator("full_name")
-    def validate_full_name(cls: Any, v: Any) -> Any:
+    @field_validator("full_name")
+    @classmethod
+    def validate_full_name(cls, v: str) -> str:
+        stripped = v.strip()
         if (
-            not v.replace(" ", "")
+            not stripped.replace(" ", "")
             .replace("-", "")
             .replace("'", "")
             .replace(".", "")
@@ -87,18 +81,17 @@ class UserCreate(BaseModel):
             raise ValueError(
                 "Full name must contain only letters, spaces, hyphens, apostrophes, and periods"
             )
-        return v.strip()
+        return stripped
 
-    @validator("password")
-    def validate_password(cls: Any, v: Any) -> Any:
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters long")
         return v
 
 
 class UserLogin(BaseModel):
-    """User login schema with MFA support"""
-
     email: EmailStr
     password: str
     mfa_token: Optional[str] = Field(None, min_length=6, max_length=6)
@@ -106,27 +99,22 @@ class UserLogin(BaseModel):
 
 
 class UserResponse(BaseModel):
-    """User response schema"""
+    model_config = ConfigDict(from_attributes=True)
 
     user_id: str
     email: str
     full_name: str
-    role: UserRole
+    role: str
     is_active: bool
     is_verified: bool
-    kyc_status: KYCStatus
+    kyc_status: str
     mfa_enabled: bool
     risk_score: int
     created_at: datetime
     last_login: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
-
 
 class TokenResponse(BaseResponse):
-    """Token response schema"""
-
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
@@ -135,22 +123,16 @@ class TokenResponse(BaseResponse):
 
 
 class MFASetupResponse(BaseResponse):
-    """MFA setup response schema"""
-
     secret: str
     qr_code: str
     backup_codes: List[str]
 
 
 class MFAVerifyRequest(BaseModel):
-    """MFA verification request schema"""
-
     token: str = Field(..., min_length=6, max_length=6)
 
 
 class AddressData(BaseModel):
-    """Address data schema"""
-
     street: str = Field(..., min_length=5, max_length=255)
     city: str = Field(..., min_length=2, max_length=100)
     state: Optional[str] = Field(None, max_length=100)
@@ -159,19 +141,18 @@ class AddressData(BaseModel):
 
 
 class KYCDataRequest(BaseModel):
-    """KYC data submission schema"""
-
     full_name: str = Field(..., min_length=2, max_length=255)
-    date_of_birth: str = Field(..., pattern="^\\d{4}-\\d{2}-\\d{2}$")
+    date_of_birth: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
     nationality: str = Field(..., min_length=2, max_length=3)
     address: AddressData
-    document_type: str = Field(..., pattern="^(passport|national_id|drivers_license)$")
+    document_type: str = Field(..., pattern=r"^(passport|national_id|drivers_license)$")
     document_number: str = Field(..., min_length=5, max_length=50)
     document_country: str = Field(..., min_length=2, max_length=3)
-    document_expiry: str = Field(..., pattern="^\\d{4}-\\d{2}-\\d{2}$")
+    document_expiry: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
 
-    @validator("date_of_birth")
-    def validate_date_of_birth(cls: Any, v: Any) -> Any:
+    @field_validator("date_of_birth")
+    @classmethod
+    def validate_date_of_birth(cls, v: str) -> str:
         try:
             birth_date = datetime.strptime(v, "%Y-%m-%d")
             age = (datetime.now() - birth_date).days / 365.25
@@ -181,23 +162,21 @@ class KYCDataRequest(BaseModel):
                 raise ValueError("Invalid date of birth")
         except ValueError as e:
             if "Invalid date of birth" in str(e) or "Must be at least" in str(e):
-                raise e
+                raise
             raise ValueError("Invalid date format. Use YYYY-MM-DD")
         return v
 
 
 class AccountCreate(BaseModel):
-    """Account creation schema"""
-
-    ethereum_address: str = Field(..., pattern="^0x[a-fA-F0-9]{40}$")
+    ethereum_address: str = Field(..., pattern=r"^0x[a-fA-F0-9]{40}$")
     account_type: str = Field(
-        default="standard", pattern="^(standard|premium|institutional|demo)$"
+        default="standard", pattern=r"^(standard|premium|institutional|demo)$"
     )
     initial_deposit: Optional[Decimal] = Field(None, ge=0, le=1000000)
 
 
 class AccountResponse(BaseModel):
-    """Account response schema"""
+    model_config = ConfigDict(from_attributes=True)
 
     account_id: str
     ethereum_address: str
@@ -209,33 +188,31 @@ class AccountResponse(BaseModel):
     risk_limit: Decimal
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 
 class TradeRequest(BaseModel):
-    """Trade request schema with validation"""
-
     account_id: int
     symbol: str = Field(..., min_length=3, max_length=20)
-    trade_type: str = Field(..., pattern="^(buy|sell)$")
-    order_type: str = Field(..., pattern="^(market|limit|stop|stop_limit)$")
+    trade_type: str = Field(..., pattern=r"^(buy|sell)$")
+    order_type: str = Field(..., pattern=r"^(market|limit|stop|stop_limit)$")
     quantity: Decimal = Field(..., gt=0, le=1000000)
     price: Optional[Decimal] = Field(None, gt=0, le=1000000)
     stop_loss: Optional[Decimal] = Field(None, gt=0)
     take_profit: Optional[Decimal] = Field(None, gt=0)
     client_order_id: Optional[str] = Field(None, max_length=100)
 
-    @validator("price")
-    def validate_price_for_limit_orders(cls: Any, v: Any, values: Any) -> Any:
-        order_type = values.get("order_type")
+    @field_validator("price")
+    @classmethod
+    def validate_price_for_limit_orders(
+        cls, v: Optional[Decimal], info: Any
+    ) -> Optional[Decimal]:
+        order_type = info.data.get("order_type") if info.data else None
         if order_type in ["limit", "stop_limit"] and v is None:
             raise ValueError("Price is required for limit and stop-limit orders")
         return v
 
 
 class TradeResponse(BaseModel):
-    """Trade response schema"""
+    model_config = ConfigDict(from_attributes=True)
 
     trade_id: str
     symbol: str
@@ -252,12 +229,9 @@ class TradeResponse(BaseModel):
     created_at: datetime
     executed_at: Optional[datetime]
 
-    class Config:
-        from_attributes = True
-
 
 class PositionResponse(BaseModel):
-    """Position response schema"""
+    model_config = ConfigDict(from_attributes=True)
 
     position_id: str
     symbol: str
@@ -276,13 +250,8 @@ class PositionResponse(BaseModel):
     vega: Optional[Decimal] = None
     rho: Optional[Decimal] = None
 
-    class Config:
-        from_attributes = True
-
 
 class PositionHealthResponse(BaseModel):
-    """Position health response schema"""
-
     position_id: str
     health_score: Decimal
     margin_ratio: Decimal
@@ -293,20 +262,19 @@ class PositionHealthResponse(BaseModel):
 
 
 class MarketDataRequest(BaseModel):
-    """Market data request schema"""
+    """Market data request schema for volatility prediction"""
 
-    symbol: str = Field(..., min_length=3, max_length=20)
+    symbol: str = Field(..., min_length=1, max_length=20)
     open: Decimal = Field(..., gt=0)
     high: Decimal = Field(..., gt=0)
     low: Decimal = Field(..., gt=0)
+    close: Optional[Decimal] = Field(None, gt=0)
     volume: Decimal = Field(..., ge=0)
-    timeframe: str = Field(default="1h", pattern="^(1m|5m|15m|1h|4h|1d)$")
+    timeframe: str = Field(default="1h", pattern=r"^(1m|5m|15m|1h|4h|1d)$")
     limit: int = Field(default=100, ge=1, le=1000)
 
 
 class VolatilityResponse(BaseModel):
-    """Volatility prediction response schema"""
-
     symbol: str
     volatility: Decimal
     confidence: Optional[Decimal]
@@ -316,8 +284,6 @@ class VolatilityResponse(BaseModel):
 
 
 class ComplianceCheckResponse(BaseResponse):
-    """Compliance check response schema"""
-
     status: ComplianceStatus
     risk_level: RiskLevel
     checks_performed: List[str]
@@ -327,8 +293,6 @@ class ComplianceCheckResponse(BaseResponse):
 
 
 class RiskMetricsResponse(BaseResponse):
-    """Risk metrics response schema"""
-
     user_id: str
     risk_metrics: Dict[str, Dict[str, Any]]
     overall_risk_score: int
@@ -336,8 +300,6 @@ class RiskMetricsResponse(BaseResponse):
 
 
 class TransactionMonitoringAlert(BaseModel):
-    """Transaction monitoring alert schema"""
-
     alert_id: str
     alert_type: str
     alert_category: str
@@ -349,8 +311,6 @@ class TransactionMonitoringAlert(BaseModel):
 
 
 class SanctionsCheckResponse(BaseModel):
-    """Sanctions check response schema"""
-
     check_id: str
     matches_found: bool
     match_details: List[Dict[str, Any]]
@@ -360,8 +320,6 @@ class SanctionsCheckResponse(BaseModel):
 
 
 class APIKeyCreate(BaseModel):
-    """API key creation schema"""
-
     key_name: str = Field(..., min_length=3, max_length=100)
     permissions: List[str]
     ip_whitelist: Optional[List[str]] = None
@@ -369,7 +327,7 @@ class APIKeyCreate(BaseModel):
 
 
 class APIKeyResponse(BaseModel):
-    """API key response schema"""
+    model_config = ConfigDict(from_attributes=True)
 
     key_id: str
     key_name: str
@@ -380,18 +338,13 @@ class APIKeyResponse(BaseModel):
     expires_at: Optional[datetime]
     last_used_at: Optional[datetime]
 
-    class Config:
-        from_attributes = True
-
 
 class APIKeyCreateResponse(APIKeyResponse):
-    """API key creation response with secret"""
-
     api_key: str
 
 
 class AuditLogResponse(BaseModel):
-    """Audit log response schema"""
+    model_config = ConfigDict(from_attributes=True)
 
     log_id: str
     action: str
@@ -403,13 +356,8 @@ class AuditLogResponse(BaseModel):
     timestamp: datetime
     compliance_impact: str
 
-    class Config:
-        from_attributes = True
-
 
 class AuditLogQuery(BaseModel):
-    """Audit log query schema"""
-
     user_id: Optional[int] = None
     action_category: Optional[str] = None
     start_date: Optional[datetime] = None
@@ -419,11 +367,9 @@ class AuditLogQuery(BaseModel):
 
 
 class FinancialReportRequest(BaseModel):
-    """Financial report request schema"""
-
-    report_type: str = Field(..., pattern="^(daily|weekly|monthly|quarterly|annual)$")
+    report_type: str = Field(..., pattern=r"^(daily|weekly|monthly|quarterly|annual)$")
     regulation_type: str = Field(
-        ..., pattern="^(sox|mifid_ii|dodd_frank|basel_iii|cftc)$"
+        ..., pattern=r"^(sox|mifid_ii|dodd_frank|basel_iii|cftc)$"
     )
     period_start: datetime
     period_end: datetime
@@ -431,8 +377,6 @@ class FinancialReportRequest(BaseModel):
 
 
 class FinancialReportResponse(BaseResponse):
-    """Financial report response schema"""
-
     report_id: str
     report_type: str
     regulation_type: str
@@ -444,18 +388,16 @@ class FinancialReportResponse(BaseResponse):
 
 
 class DataSubjectRequest(BaseModel):
-    """GDPR data subject request schema"""
-
     request_type: str = Field(
-        ..., pattern="^(access|rectification|erasure|portability|restriction)$"
+        ..., pattern=r"^(access|rectification|erasure|portability|restriction)$"
     )
     description: Optional[str] = Field(None, max_length=1000)
-    verification_method: Optional[str] = Field(None, pattern="^(email|phone|document)$")
+    verification_method: Optional[str] = Field(
+        None, pattern=r"^(email|phone|document)$"
+    )
 
 
 class DataSubjectRequestResponse(BaseResponse):
-    """Data subject request response schema"""
-
     request_id: str
     request_type: str
     status: str
@@ -464,8 +406,6 @@ class DataSubjectRequestResponse(BaseResponse):
 
 
 class DataExportResponse(BaseResponse):
-    """Data export response schema"""
-
     export_id: str
     file_path: str
     file_size: int
@@ -473,16 +413,12 @@ class DataExportResponse(BaseResponse):
 
 
 class ReconciliationRequest(BaseModel):
-    """Reconciliation request schema"""
-
-    reconciliation_type: str = Field(..., pattern="^(daily|monthly|trade|position)$")
+    reconciliation_type: str = Field(..., pattern=r"^(daily|monthly|trade|position)$")
     business_date: datetime
     tolerance_threshold: Optional[Decimal] = Field(Decimal("0.01"), ge=0)
 
 
 class ReconciliationResponse(BaseResponse):
-    """Reconciliation response schema"""
-
     reconciliation_id: str
     reconciliation_type: str
     status: str
@@ -494,8 +430,6 @@ class ReconciliationResponse(BaseResponse):
 
 
 class PaginatedResponse(BaseModel):
-    """Paginated response schema"""
-
     items: List[Any]
     total: int
     page: int
@@ -506,16 +440,12 @@ class PaginatedResponse(BaseModel):
 
 
 class BulkOperationRequest(BaseModel):
-    """Bulk operation request schema"""
-
     operation_type: str
     items: List[Dict[str, Any]]
     batch_size: int = Field(default=100, ge=1, le=1000)
 
 
 class BulkOperationResponse(BaseResponse):
-    """Bulk operation response schema"""
-
     operation_id: str
     total_items: int
     processed_items: int
@@ -525,8 +455,6 @@ class BulkOperationResponse(BaseResponse):
 
 
 class NotificationPreferences(BaseModel):
-    """Notification preferences schema"""
-
     email_enabled: bool = True
     sms_enabled: bool = False
     push_enabled: bool = True
@@ -537,8 +465,6 @@ class NotificationPreferences(BaseModel):
 
 
 class NotificationResponse(BaseModel):
-    """Notification response schema"""
-
     notification_id: str
     type: str
     title: str
@@ -549,8 +475,6 @@ class NotificationResponse(BaseModel):
 
 
 class SystemConfigResponse(BaseModel):
-    """System configuration response schema"""
-
     trading_enabled: bool
     maintenance_mode: bool
     api_version: str

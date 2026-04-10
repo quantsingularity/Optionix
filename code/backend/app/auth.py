@@ -1,16 +1,6 @@
 """
-Authentication and Authorization Service for Optionix Platform
-Implements comprehensive security features including:
-- Multi-factor authentication (MFA)
-- Role-based access control (RBAC)
-- Session management with security controls
-- Biometric authentication support
-- Risk-based authentication
-- Comprehensive audit logging
-- OAuth 2.0 and OpenID Connect support
-- JWT token management with rotation
-- Device fingerprinting
-- Behavioral analysis
+Authentication and Authorization Service for Optionix Platform.
+Implements JWT auth, RBAC, MFA, session management, and audit logging.
 """
 
 import base64
@@ -73,8 +63,6 @@ class Permission(str, Enum):
 
 
 class AuthenticationMethod(str, Enum):
-    """Authentication methods"""
-
     PASSWORD = "password"
     MFA_TOTP = "mfa_totp"
     MFA_SMS = "mfa_sms"
@@ -84,19 +72,8 @@ class AuthenticationMethod(str, Enum):
     OAUTH = "oauth"
 
 
-class SessionStatus(str, Enum):
-    """Session status values"""
-
-    ACTIVE = "active"
-    EXPIRED = "expired"
-    TERMINATED = "terminated"
-    SUSPENDED = "suspended"
-
-
 @dataclass
 class AuthenticationResult:
-    """Authentication result"""
-
     success: bool
     user_id: Optional[str]
     session_id: Optional[str]
@@ -109,19 +86,17 @@ class AuthenticationResult:
 
 
 class AuthService:
-    """Authentication and authorization service"""
+    """Comprehensive authentication and authorization service"""
 
     def __init__(self) -> None:
-        """Initialize auth service"""
         self._jwt_private_key: Optional[bytes] = None
         self._jwt_public_key: Optional[bytes] = None
-        self._role_permissions: Dict[UserRole, List[str]] = {}
+        self._role_permissions: Dict[str, List[str]] = {}
         self._failed_attempts: Dict[str, Dict[str, Any]] = {}
         self._device_fingerprints: Dict[str, Dict[str, Any]] = {}
         self._initialize_auth_service()
 
     def _initialize_auth_service(self) -> None:
-        """Initialize authentication service"""
         try:
             self._generate_jwt_keys()
             self._initialize_role_permissions()
@@ -131,7 +106,6 @@ class AuthService:
             raise
 
     def _generate_jwt_keys(self) -> None:
-        """Generate RSA key pair for JWT signing"""
         try:
             private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
             self._jwt_private_key = private_key.private_bytes(
@@ -149,10 +123,9 @@ class AuthService:
             raise
 
     def _initialize_role_permissions(self) -> None:
-        """Initialize role-permission mappings"""
         self._role_permissions = {
-            UserRole.SUPER_ADMIN: [p.value for p in Permission],
-            UserRole.ADMIN: [
+            UserRole.SUPER_ADMIN.value: [p.value for p in Permission],
+            UserRole.ADMIN.value: [
                 Permission.CREATE_USER.value,
                 Permission.READ_USER.value,
                 Permission.UPDATE_USER.value,
@@ -162,40 +135,40 @@ class AuthService:
                 Permission.GENERATE_REPORTS.value,
                 Permission.VIEW_AUDIT_LOGS.value,
             ],
-            UserRole.COMPLIANCE_OFFICER: [
+            UserRole.COMPLIANCE_OFFICER.value: [
                 Permission.READ_USER.value,
                 Permission.VIEW_COMPLIANCE_DATA.value,
                 Permission.GENERATE_REPORTS.value,
                 Permission.APPROVE_KYC.value,
                 Permission.VIEW_AUDIT_LOGS.value,
             ],
-            UserRole.RISK_MANAGER: [
+            UserRole.RISK_MANAGER.value: [
                 Permission.READ_USER.value,
                 Permission.VIEW_TRADES.value,
                 Permission.VIEW_FINANCIAL_DATA.value,
                 Permission.VIEW_COMPLIANCE_DATA.value,
                 Permission.GENERATE_REPORTS.value,
             ],
-            UserRole.TRADER: [
+            UserRole.TRADER.value: [
                 Permission.EXECUTE_TRADE.value,
                 Permission.VIEW_TRADES.value,
                 Permission.CANCEL_TRADE.value,
                 Permission.VIEW_FINANCIAL_DATA.value,
             ],
-            UserRole.ANALYST: [
+            UserRole.ANALYST.value: [
                 Permission.VIEW_TRADES.value,
                 Permission.VIEW_FINANCIAL_DATA.value,
                 Permission.EXPORT_FINANCIAL_DATA.value,
             ],
-            UserRole.CUSTOMER_SUPPORT: [
+            UserRole.CUSTOMER_SUPPORT.value: [
                 Permission.READ_USER.value,
                 Permission.VIEW_TRADES.value,
             ],
-            UserRole.VIEWER: [
+            UserRole.VIEWER.value: [
                 Permission.VIEW_TRADES.value,
                 Permission.VIEW_FINANCIAL_DATA.value,
             ],
-            UserRole.CUSTOMER: [
+            UserRole.CUSTOMER.value: [
                 Permission.EXECUTE_TRADE.value,
                 Permission.VIEW_TRADES.value,
                 Permission.CANCEL_TRADE.value,
@@ -203,45 +176,37 @@ class AuthService:
         }
 
     def get_password_hash(self, password: str) -> str:
-        """Hash password using bcrypt"""
-        salt = bcrypt.gensalt()
+        salt = bcrypt.gensalt(rounds=12)
         return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        """Verify password against hash"""
-        return bcrypt.checkpw(
-            plain_password.encode("utf-8"), hashed_password.encode("utf-8")
-        )
+        try:
+            return bcrypt.checkpw(
+                plain_password.encode("utf-8"), hashed_password.encode("utf-8")
+            )
+        except Exception as e:
+            logger.error(f"Password verification failed: {e}")
+            return False
 
     def create_access_token(
         self, data: dict, expires_delta: Optional[timedelta] = None
-    ) -> Any:
-        """Create JWT access token"""
+    ) -> str:
         to_encode = data.copy()
-        if expires_delta:
-            expire = datetime.utcnow() + expires_delta
-        else:
-            expire = datetime.utcnow() + timedelta(
-                minutes=settings.access_token_expire_minutes
-            )
-        to_encode.update({"exp": expire, "type": "access"})
-        encoded_jwt = jwt.encode(
-            to_encode, settings.secret_key, algorithm=settings.algorithm
+        expire = datetime.utcnow() + (
+            expires_delta
+            if expires_delta
+            else timedelta(minutes=settings.access_token_expire_minutes)
         )
-        return encoded_jwt
+        to_encode.update({"exp": expire, "type": "access"})
+        return jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
 
-    def create_refresh_token(self, data: dict) -> Any:
-        """Create JWT refresh token"""
+    def create_refresh_token(self, data: dict) -> str:
         to_encode = data.copy()
         expire = datetime.utcnow() + timedelta(days=settings.refresh_token_expire_days)
         to_encode.update({"exp": expire, "type": "refresh"})
-        encoded_jwt = jwt.encode(
-            to_encode, settings.secret_key, algorithm=settings.algorithm
-        )
-        return encoded_jwt
+        return jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
 
     def verify_token(self, token: str) -> Optional[dict]:
-        """Verify JWT token"""
         try:
             payload = jwt.decode(
                 token, settings.secret_key, algorithms=[settings.algorithm]
@@ -251,228 +216,31 @@ class AuthService:
             return None
 
     def create_session(self, user_id: str, user_agent: str, ip_address: str) -> str:
-        """Create user session"""
-        session_id = secrets.token_urlsafe(32)
-        return session_id
+        return secrets.token_urlsafe(32)
 
-    def check_failed_attempts(self, key: str) -> dict:
-        """Check failed login attempts"""
+    def check_failed_attempts(self, key: str) -> Dict[str, Any]:
+        """Check failed login attempts. Returns {"locked": bool, "count": int}."""
         attempts = self._failed_attempts.get(key, {"count": 0, "locked_until": None})
-        if attempts["locked_until"] and datetime.utcnow() < attempts["locked_until"]:
+        locked_until = attempts.get("locked_until")
+        if locked_until and datetime.utcnow() < locked_until:
             return {"locked": True, "count": attempts["count"]}
         return {"locked": False, "count": attempts["count"]}
 
-    def record_failed_attempt(self, key: str) -> Any:
-        """Record failed login attempt"""
+    def record_failed_attempt(self, key: str) -> None:
         if key not in self._failed_attempts:
             self._failed_attempts[key] = {"count": 0, "locked_until": None}
         self._failed_attempts[key]["count"] += 1
-        if self._failed_attempts[key]["count"] >= 5:
+        if self._failed_attempts[key]["count"] >= settings.max_failed_login_attempts:
             self._failed_attempts[key]["locked_until"] = datetime.utcnow() + timedelta(
-                minutes=15
+                minutes=settings.account_lockout_duration_minutes
             )
 
-    def clear_failed_attempts(self, key: str) -> Any:
-        """Clear failed login attempts"""
+    def clear_failed_attempts(self, key: str) -> None:
         if key in self._failed_attempts:
             del self._failed_attempts[key]
 
     def has_permission(self, user_role: str, permission: str) -> bool:
-        """Check if user role has specific permission"""
         return permission in self._role_permissions.get(user_role, [])
-
-
-auth_service = AuthService()
-
-
-def verify_token(token: str):
-    """Module-level verify_token helper used by middleware."""
-    return auth_service.verify_token(token)
-
-
-class MFAService:
-    """Multi-factor authentication service"""
-
-    def generate_totp_secret(self) -> str:
-        """Generate TOTP secret"""
-        return pyotp.random_base32()
-
-    def generate_totp_qr_code(self, email: str, secret: str) -> str:
-        """Generate QR code for TOTP setup"""
-        totp_uri = pyotp.totp.TOTP(secret).provisioning_uri(
-            name=email, issuer_name="Optionix"
-        )
-        qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        qr.add_data(totp_uri)
-        qr.make(fit=True)
-        img = qr.make_image(fill_color="black", back_color="white")
-        buffer = BytesIO()
-        img.save(buffer, format="PNG")
-        buffer.seek(0)
-        return base64.b64encode(buffer.getvalue()).decode()
-
-    def verify_totp_token(self, secret: str, token: str) -> bool:
-        """Verify TOTP token"""
-        totp = pyotp.TOTP(secret)
-        return totp.verify(token, valid_window=1)
-
-    def generate_backup_codes(self, count: int = 10) -> List[str]:
-        """Generate backup codes"""
-        return [secrets.token_hex(4) for _ in range(count)]
-
-    def hash_backup_codes(self, codes: List[str]) -> List[str]:
-        """Hash backup codes"""
-        return [hashlib.sha256(code.encode()).hexdigest() for code in codes]
-
-
-class RBACService:
-    """Role-based access control service"""
-
-    def __init__(self) -> None:
-        self.auth_service = auth_service
-
-    def check_permission(self, user_role: str, permission: str) -> bool:
-        """Check if user has permission"""
-        return self.auth_service.has_permission(user_role, permission)
-
-    def get_user_permissions(self, user_role: str) -> List[str]:
-        """Get all permissions for user role"""
-        return self.auth_service._role_permissions.get(user_role, [])
-
-
-mfa_service = MFAService()
-rbac_service = RBACService()
-
-
-async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
-):
-    """Get current authenticated user"""
-    token = credentials.credentials
-    payload = auth_service.verify_token(token)
-    if payload is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return payload
-
-
-async def get_current_verified_user(current_user: dict = Depends(get_current_user)):
-    """Get current verified user"""
-    return current_user
-
-
-def require_permission(permission: Permission) -> Any:
-    """Dependency function to require specific permission"""
-
-    def permission_checker(current_user: dict = Depends(get_current_user)):
-        user_role = current_user.get("role")
-        if not rbac_service.check_permission(user_role, permission.value):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
-            )
-        return current_user
-
-    return permission_checker
-
-
-def log_auth_event(
-    db: Session,
-    user_id: Optional[str],
-    event_type: str,
-    ip_address: str,
-    user_agent: str,
-    status: str,
-    details: str = None,
-) -> Any:
-    """Log authentication event"""
-    logger.info(
-        f"Auth event: {event_type} for user {user_id} from {ip_address} - {status}"
-    )
-
-
-class AuthService:
-    """Authentication service"""
-
-    def __init__(self):
-        self._failed_attempts = {}
-
-    def get_password_hash(self, password: str) -> str:
-        """Hash a password using bcrypt"""
-        return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-
-    def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        """Verify a password against its hash"""
-        return bcrypt.checkpw(
-            plain_password.encode("utf-8"), hashed_password.encode("utf-8")
-        )
-
-    def check_failed_attempts(self, identifier: str) -> dict:
-        """Check failed login attempts"""
-        attempts = self._failed_attempts.get(identifier, 0)
-        locked = attempts >= 5
-        return {"attempts": attempts, "locked": locked}
-
-    def record_failed_attempt(self, identifier: str):
-        """Record a failed login attempt"""
-        self._failed_attempts[identifier] = self._failed_attempts.get(identifier, 0) + 1
-
-    def clear_failed_attempts(self, identifier: str):
-        """Clear failed login attempts"""
-        if identifier in self._failed_attempts:
-            del self._failed_attempts[identifier]
-
-    def create_access_token(self, data: dict, expires_delta=None) -> str:
-        """Create JWT access token"""
-        from datetime import timedelta
-
-        from jose import jwt
-
-        from .config import settings
-
-        to_encode = data.copy()
-        if expires_delta:
-            expire = datetime.utcnow() + expires_delta
-        else:
-            expire = datetime.utcnow() + timedelta(
-                minutes=settings.access_token_expire_minutes
-            )
-        to_encode.update({"exp": expire, "type": "access"})
-        return jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
-
-    def verify_token(self, token: str):
-        """Verify JWT token"""
-        try:
-            from jose import jwt
-
-            from .config import settings
-
-            payload = jwt.decode(
-                token, settings.secret_key, algorithms=[settings.algorithm]
-            )
-            return payload
-        except Exception:
-            return None
-
-    def create_refresh_token(self, data: dict, expires_delta=None) -> str:
-        """Create JWT refresh token"""
-        from datetime import timedelta
-
-        from jose import jwt
-
-        from .config import settings
-
-        to_encode = data.copy()
-        if expires_delta:
-            expire = datetime.utcnow() + expires_delta
-        else:
-            expire = datetime.utcnow() + timedelta(
-                days=settings.refresh_token_expire_days
-            )
-        to_encode.update({"exp": expire, "type": "refresh"})
-        return jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
 
     def validate_kyc_data(self, kyc_data: dict) -> bool:
         """Validate KYC data fields"""
@@ -496,8 +264,103 @@ class AuthService:
 auth_service = AuthService()
 
 
-def log_auth_event(db, user_id, event_type, ip_address, user_agent, status):
-    """Log an authentication event"""
+def verify_token(token: str) -> Optional[dict]:
+    """Module-level helper used by middleware."""
+    return auth_service.verify_token(token)
+
+
+class MFAService:
+    """Multi-factor authentication service"""
+
+    def generate_totp_secret(self) -> str:
+        return pyotp.random_base32()
+
+    def generate_totp_qr_code(self, email: str, secret: str) -> str:
+        totp_uri = pyotp.totp.TOTP(secret).provisioning_uri(
+            name=email, issuer_name="Optionix"
+        )
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(totp_uri)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)
+        return base64.b64encode(buffer.getvalue()).decode()
+
+    def verify_totp_token(self, secret: str, token: str) -> bool:
+        totp = pyotp.TOTP(secret)
+        return totp.verify(token, valid_window=1)
+
+    def generate_backup_codes(self, count: int = 10) -> List[str]:
+        return [secrets.token_hex(4) for _ in range(count)]
+
+    def hash_backup_codes(self, codes: List[str]) -> List[str]:
+        return [hashlib.sha256(code.encode()).hexdigest() for code in codes]
+
+
+class RBACService:
+    """Role-based access control service"""
+
+    def __init__(self) -> None:
+        self.auth_service = auth_service
+
+    def check_permission(self, user_role: str, permission: str) -> bool:
+        return self.auth_service.has_permission(user_role, permission)
+
+    def get_user_permissions(self, user_role: str) -> List[str]:
+        return self.auth_service._role_permissions.get(user_role, [])
+
+
+mfa_service = MFAService()
+rbac_service = RBACService()
+
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
+) -> dict:
+    """Get current authenticated user from JWT token"""
+    token = credentials.credentials
+    payload = auth_service.verify_token(token)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return payload
+
+
+async def get_current_verified_user(
+    current_user: dict = Depends(get_current_user),
+) -> dict:
+    return current_user
+
+
+def require_permission(permission: Permission) -> Any:
+    """Dependency factory to enforce specific permission"""
+
+    def permission_checker(current_user: dict = Depends(get_current_user)) -> dict:
+        user_role = current_user.get("role")
+        if not rbac_service.check_permission(user_role, permission.value):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+            )
+        return current_user
+
+    return permission_checker
+
+
+def log_auth_event(
+    db: Session,
+    user_id: Optional[int],
+    event_type: str,
+    ip_address: str,
+    user_agent: str,
+    event_status: str,
+    details: Optional[str] = None,
+) -> None:
+    """Log an authentication event to the audit log table"""
     from .models import AuditLog
 
     try:
@@ -505,9 +368,10 @@ def log_auth_event(db, user_id, event_type, ip_address, user_agent, status):
             user_id=user_id,
             action=event_type,
             action_category="authentication",
-            status=status,
+            status=event_status,
             ip_address=ip_address,
             user_agent=user_agent,
+            error_message=details,
         )
         db.add(audit_log)
         db.commit()
