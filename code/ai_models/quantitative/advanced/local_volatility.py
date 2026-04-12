@@ -1,5 +1,3 @@
-from typing import Any
-
 """
 Local Volatility Models for option pricing.
 
@@ -9,6 +7,7 @@ for more accurate option pricing with volatility skew and smile.
 
 import logging
 from datetime import datetime
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np

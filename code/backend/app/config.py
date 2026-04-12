@@ -86,8 +86,8 @@ class Settings(BaseSettings):
     basel_iii_monitoring_enabled: bool = True
     dodd_frank_compliance_enabled: bool = True
 
-    model_path: str = "models/volatility_model.pkl"
-    scaler_path: str = "models/feature_scaler.pkl"
+    model_path: str = "../ai_models/volatility_model.pkl"
+    scaler_path: str = "../ai_models/feature_scaler.pkl"
     model_version: str = "1.0.0"
 
     default_leverage_limit: Decimal = Decimal("10.0")

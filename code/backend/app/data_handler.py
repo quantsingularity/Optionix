@@ -25,7 +25,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import redis
 from cryptography.fernet import Fernet
-from pydantic import BaseModel, ValidationError, validator
+from pydantic import BaseModel, ValidationError, field_validator
 from sqlalchemy import (
     JSON,
     Column,
@@ -38,8 +38,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import sessionmaker
 
-logger = logging.getLogger(__name__)
 from .models import Base
+
+logger = logging.getLogger(__name__)
 
 
 class DataClassification(str, Enum):
@@ -98,21 +99,24 @@ class UserDataModel(BaseModel):
     address: Optional[Dict[str, str]] = None
     kyc_status: Optional[str] = None
 
-    @validator("email")
-    def validate_email(cls: Any, v: Any) -> Any:
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: Any) -> Any:
         email_pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
         if not re.match(email_pattern, v):
             raise ValueError("Invalid email format")
         return v.lower()
 
-    @validator("user_id")
-    def validate_user_id(cls: Any, v: Any) -> Any:
+    @field_validator("user_id")
+    @classmethod
+    def validate_user_id(cls, v: Any) -> Any:
         if not re.match("^[a-zA-Z0-9_-]{3,50}$", v):
             raise ValueError("Invalid user ID format")
         return v
 
-    @validator("phone_number")
-    def validate_phone(cls: Any, v: Any) -> Any:
+    @field_validator("phone_number")
+    @classmethod
+    def validate_phone(cls, v: Any) -> Any:
         if v and (not re.match("^\\+?[1-9]\\d{1,14}$", v)):
             raise ValueError("Invalid phone number format")
         return v
@@ -128,25 +132,28 @@ class TransactionDataModel(BaseModel):
     transaction_type: str
     timestamp: datetime
     status: str
-    metadata: Optional[Dict[str, Any]] = None
+    extra_metadata: Optional[Dict[str, Any]] = None
 
-    @validator("amount")
-    def validate_amount(cls: Any, v: Any) -> Any:
+    @field_validator("amount")
+    @classmethod
+    def validate_amount(cls, v: Any) -> Any:
         if v <= 0:
             raise ValueError("Amount must be positive")
         if v > 1000000000:
             raise ValueError("Amount exceeds maximum limit")
         return round(v, 8)
 
-    @validator("currency")
-    def validate_currency(cls: Any, v: Any) -> Any:
+    @field_validator("currency")
+    @classmethod
+    def validate_currency(cls, v: Any) -> Any:
         valid_currencies = ["USD", "EUR", "GBP", "JPY", "BTC", "ETH"]
         if v.upper() not in valid_currencies:
             raise ValueError("Invalid currency code")
         return v.upper()
 
-    @validator("transaction_type")
-    def validate_transaction_type(cls: Any, v: Any) -> Any:
+    @field_validator("transaction_type")
+    @classmethod
+    def validate_transaction_type(cls, v: Any) -> Any:
         valid_types = ["DEPOSIT", "WITHDRAWAL", "TRADE", "TRANSFER", "FEE"]
         if v.upper() not in valid_types:
             raise ValueError("Invalid transaction type")
@@ -164,20 +171,23 @@ class OptionDataModel(BaseModel):
     premium: float
     volatility: Optional[float] = None
 
-    @validator("strike_price", "premium")
-    def validate_positive_values(cls: Any, v: Any) -> Any:
+    @field_validator("strike_price", "premium")
+    @classmethod
+    def validate_positive_values(cls, v: Any) -> Any:
         if v <= 0:
             raise ValueError("Value must be positive")
         return v
 
-    @validator("option_type")
-    def validate_option_type(cls: Any, v: Any) -> Any:
+    @field_validator("option_type")
+    @classmethod
+    def validate_option_type(cls, v: Any) -> Any:
         if v.upper() not in ["CALL", "PUT"]:
             raise ValueError("Option type must be CALL or PUT")
         return v.upper()
 
-    @validator("volatility")
-    def validate_volatility(cls: Any, v: Any) -> Any:
+    @field_validator("volatility")
+    @classmethod
+    def validate_volatility(cls, v: Any) -> Any:
         if v is not None and (v < 0 or v > 5):
             raise ValueError("Volatility must be between 0 and 5")
         return v
@@ -292,7 +302,7 @@ class DataHandler:
                 )
             try:
                 validated_model = model_class(**data)
-                sanitized_data = validated_model.dict()
+                sanitized_data = validated_model.model_dump()
             except ValidationError as e:
                 for error in e.errors():
                     field = ".".join((str(x) for x in error["loc"]))
@@ -579,7 +589,7 @@ class DataHandler:
                 consistency_score=scores["consistency"],
                 validity_score=scores["validity"],
                 timestamp=datetime.now(timezone.utc).replace(tzinfo=None),
-                metadata={"overall_score": scores["overall"]},
+                extra_metadata={"overall_score": scores["overall"]},
             )
             self.db_session.add(metrics_model)
             self.db_session.commit()
@@ -616,7 +626,7 @@ class DataHandler:
                 timestamp=audit_log.timestamp,
                 data_hash=audit_log.data_hash,
                 classification=audit_log.classification.value,
-                metadata=audit_log.extra_metadata,
+                extra_metadata=audit_log.metadata,
             )
             self.db_session.add(audit_model)
             self.db_session.commit()

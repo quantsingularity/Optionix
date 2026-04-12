@@ -77,12 +77,22 @@ class BlockchainService:
     def _load_contract_abi(self) -> None:
         """Load contract ABI from file with error handling"""
         try:
+            # Walk up from backend/app/services/ to project root, then into blockchain/
+            project_root = os.path.dirname(
+                os.path.dirname(
+                    os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+                )
+            )
             abi_path = os.path.join(
-                os.path.dirname(os.path.dirname(__file__)),
-                "../blockchain/contracts/FuturesContract.abi.json",
+                project_root,
+                "blockchain",
+                "contracts",
+                "FuturesContract.abi.json",
             )
             if not os.path.exists(abi_path):
-                logger.error(f"Contract ABI file not found at {abi_path}")
+                logger.warning(
+                    f"Contract ABI file not found at {abi_path}; running without ABI"
+                )
                 self.futures_abi = []
                 return
             with open(abi_path, "r") as f:

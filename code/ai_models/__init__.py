@@ -1,5 +1,6 @@
 """
 AI Models package for Optionix platform.
+Includes ML models and the quantitative finance library.
 """
 
 from .create_model import ModelService, ModelStatus, ModelType, RiskLevel

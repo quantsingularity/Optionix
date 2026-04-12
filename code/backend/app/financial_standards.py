@@ -24,10 +24,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import Session
 
 from .config import settings
-from .models import Trade
+from .models import Base, Trade
 
 logger = logging.getLogger(__name__)
-from .models import Base
 
 
 class FinancialRegulation(str, Enum):

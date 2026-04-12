@@ -34,8 +34,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import sessionmaker
 
-logger = logging.getLogger(__name__)
 from .models import Base
+
+logger = logging.getLogger(__name__)
 
 
 class AlertSeverity(str, Enum):

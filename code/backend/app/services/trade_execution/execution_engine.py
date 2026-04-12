@@ -1,5 +1,3 @@
-from typing import Any
-
 """
 Execution Engine for Optionix platform.
 
@@ -13,6 +11,7 @@ import time
 import uuid
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 import numpy as np
 

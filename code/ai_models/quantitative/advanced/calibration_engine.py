@@ -1,5 +1,3 @@
-from typing import Any
-
 """
 Market Calibration Framework for option pricing models.
 
@@ -8,6 +6,7 @@ to ensure they match market prices.
 """
 
 import logging
+from typing import Any
 
 import numpy as np
 

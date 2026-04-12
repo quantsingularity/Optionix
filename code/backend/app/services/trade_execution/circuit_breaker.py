@@ -1,5 +1,3 @@
-from typing import Any
-
 """
 Circuit Breaker implementation for Optionix platform.
 
@@ -12,6 +10,7 @@ import threading
 import time
 from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any
 
 import numpy as np
 

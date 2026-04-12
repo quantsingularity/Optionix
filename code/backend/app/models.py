@@ -537,3 +537,31 @@ class MarketData(Base):
         Index("idx_market_data_symbol_time", "symbol", "timestamp", unique=True),
         Index("idx_market_data_time", "timestamp"),
     )
+
+
+class ComplianceReport(Base):
+    """Regulatory compliance report storage"""
+
+    __tablename__ = "compliance_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    report_type = Column(String(100), nullable=False)
+    regulation_type = Column(String(50), nullable=False)
+    reporting_period_start = Column(DateTime, nullable=False)
+    reporting_period_end = Column(DateTime, nullable=False)
+    report_data = Column(Text, nullable=False)
+    report_hash = Column(String(64), nullable=False)
+    generated_by = Column(String(100), nullable=False, default="system")
+    generated_at = Column(DateTime, default=datetime.utcnow)
+    status = Column(String(20), default="generated")
+    submitted_at = Column(DateTime, nullable=True)
+    submitted_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    __table_args__ = (
+        Index("idx_compliance_report_type", "report_type", "regulation_type"),
+        Index(
+            "idx_compliance_report_period",
+            "reporting_period_start",
+            "reporting_period_end",
+        ),
+    )

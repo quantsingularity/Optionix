@@ -1,3 +1,8 @@
+"""
+Risk assessment utilities for Optionix platform.
+Provides VaR, Expected Shortfall, and margin requirement calculations.
+"""
+
 from typing import Any
 
 import numpy as np

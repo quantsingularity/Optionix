@@ -1,5 +1,3 @@
-from typing import Any
-
 """
 Stochastic Volatility Models for option pricing.
 
@@ -8,6 +6,7 @@ Heston model and SABR model for more accurate option pricing.
 """
 
 import logging
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
